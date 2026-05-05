@@ -36,6 +36,9 @@ class GiyuLoop(AgentLoop):
         return dict(
             thinker=self.thinker, planner=self.planner, generator=self.generator,
             reflector=self.reflector, actor=self.actor, analyzer=self.analyzer,
+            stability_scorer=self.components.get("stability_scorer"),
+            decision_gate=self.components.get("decision_gate"),
+            correlation_engine=self.components.get("correlation_engine"),
             llm=self.planner.llm, bg=self._background_tasks, retries=self.MAX_RETRIES,
         )
 
