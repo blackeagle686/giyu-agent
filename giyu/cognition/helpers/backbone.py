@@ -25,7 +25,14 @@ def _load_backbone() -> dict:
                     "pending_steps": [],
                     "failed_steps": []
                 },
-                "memory": {}
+                "memory": {},
+                "stability_reports": [],
+                "anomalies": [],
+                "escalation_state": {
+                    "current_level": "ignore",
+                    "reason": "",
+                    "timestamp": ""
+                }
             }
         try:
             with open(BACKBONE_FILE, "r", encoding="utf-8") as f:
@@ -45,7 +52,14 @@ def _load_backbone() -> dict:
                     "pending_steps": [],
                     "failed_steps": []
                 },
-                "memory": {}
+                "memory": {},
+                "stability_reports": [],
+                "anomalies": [],
+                "escalation_state": {
+                    "current_level": "ignore",
+                    "reason": "",
+                    "timestamp": ""
+                }
             }
 
 def _save_backbone(data: dict) -> None:
