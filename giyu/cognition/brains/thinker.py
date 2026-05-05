@@ -7,49 +7,53 @@ from ..core.prompts import TASK_GENERATION_PROMPT
 
 class GiyuThinker(Thinker):
     """
-    Decomposes the user prompt into a prioritized task list
-    and writes it to .giyu_tasks.json.
+    Interprets system signals and understands context of events.
+    Uses LLM for light reasoning/classification.
     """
 
     async def analyze(self, prompt: str, memory, session_id: str) -> str:
         from ..helpers.schemas import validate_schema, TASK_SCHEMA
         context = await memory.get_full_context(session_id, query=prompt)
 
-        full_prompt = TASK_GENERATION_PROMPT.format(
-            prompt=prompt,
-            context=context or "No prior context."
-        )
+        profile_str = self.profile.to_prompt_string() if self.profile else ""
 
-        raw = await self.llm.generate(full_prompt, session_id=None, max_tokens=800)
+        system_prompt = f"""
+{profile_str}
+
+You are the 'Thinker' module for Giyu Tomioka, the System Stability Guardian.
+Your job is to interpret the user's request or system signal and break it down into structured tasks.
+Focus on: Stability Monitoring, Anomaly Detection, and Diagnostic Reporting.
+
+Respond with exactly this JSON format:
+{{
+    "original_prompt": "{prompt}",
+    "tasks": [
+        {{
+            "id": 1,
+            "priority": 1,
+            "title": "Task Title",
+            "description": "Detailed description",
+            "status": "pending",
+            "type": "read|command|analysis"
+        }}
+    ]
+}}
+"""
+
+        raw = await self.llm.generate(f"{system_prompt}\n\nSignal/Prompt: {prompt}\nContext: {context}", session_id=None, max_tokens=500)
         clean = _clean_json(raw)
 
         # Parse the task list
         try:
             task_data = json.loads(clean)
         except Exception:
-            # Fallback block detection
-            m = re.search(r'\{.*\}', clean, re.DOTALL)
-            if m:
-                try: task_data = json.loads(m.group(0))
-                except: task_data = None
-            else:
-                task_data = None
-        
-        if not task_data:
-            # Final fallback
+            # Fallback
             task_data = {
                 "original_prompt": prompt,
-                "tasks": [{"id": 1, "priority": 1, "title": "Execute user request", "description": prompt, "status": "pending", "type": "command"}]
+                "tasks": [{"id": 1, "priority": 1, "title": "System Health Check", "description": f"Perform diagnostic for: {prompt}", "status": "pending", "type": "analysis"}]
             }
-
-        # Schema Validation
-        errors = validate_schema(task_data, TASK_SCHEMA)
-        if errors:
-            print(f"[THINKER WARNING] Schema validation failed: {errors}")
 
         # Write task file
         _save_tasks(task_data)
 
-        # Return a concise objective summary for loop status displays
-        task_count = len(task_data.get("tasks", []))
-        return f"TASK_FILE:{TASK_FILE} ({task_count} tasks for: {prompt[:80]})"
+        return f"STABILITY_MODE: {prompt[:50]}..."
