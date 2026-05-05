@@ -32,6 +32,17 @@ async def get_giyu_agent(on_startup_progress=None):
             "decision_gate": lambda **ctx: DecisionGate(),
             "analyzer": lambda **ctx: GiyuAnalyzer(),
             "correlation_engine": lambda **ctx: CorrelationEngine(ctx["llm"]),
+            "loop": lambda **ctx: GiyuLoop(
+                thinker=ctx["thinker"],
+                planner=ctx["planner"],
+                actor=ctx["actor"],
+                reflector=ctx["reflector"],
+                analyzer=ctx["analyzer"],
+                stability_scorer=ctx["stability_scorer"],
+                decision_gate=ctx["decision_gate"],
+                correlation_engine=ctx["correlation_engine"],
+                generator=ctx["generator"]
+            )
         }
     )
     
