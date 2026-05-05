@@ -151,3 +151,22 @@ def set_memory_value(key: str, value: any) -> None:
 
 def get_memory_value(key: str, default: any = None) -> any:
     return _load_backbone().get("memory", {}).get(key, default)
+
+# --- Stability Helpers (NEW) ---
+def add_stability_report(report: dict) -> None:
+    data = _load_backbone()
+    data.setdefault("stability_reports", []).append(report)
+    _save_backbone(data)
+
+def add_anomaly(anomaly: dict) -> None:
+    data = _load_backbone()
+    data.setdefault("anomalies", []).append(anomaly)
+    _save_backbone(data)
+
+def update_escalation_status(level: str, reason: str) -> None:
+    data = _load_backbone()
+    data.setdefault("escalation_state", {})
+    data["escalation_state"]["current_level"] = level
+    data["escalation_state"]["reason"] = reason
+    data["escalation_state"]["timestamp"] = datetime.now().isoformat()
+    _save_backbone(data)
