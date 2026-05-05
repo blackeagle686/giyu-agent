@@ -28,20 +28,16 @@ async def get_giyu_agent(on_startup_progress=None):
             "planner": lambda **ctx: GiyuPlanner(ctx["llm"], ctx["tools"]),
             "reflector": lambda **ctx: GiyuReflector(ctx["llm"], profile=profile),
             "generator": lambda **ctx: GiyuGenerator(ctx["llm"]),
-            "stability_scorer": lambda **ctx: StabilityScorer(),
-            "decision_gate": lambda **ctx: DecisionGate(),
-            "analyzer": lambda **ctx: GiyuAnalyzer(),
-            "correlation_engine": lambda **ctx: CorrelationEngine(ctx["llm"]),
             "loop": lambda **ctx: GiyuLoop(
                 thinker=ctx["thinker"],
                 planner=ctx["planner"],
                 actor=ctx["actor"],
                 reflector=ctx["reflector"],
                 analyzer=ctx["analyzer"],
-                stability_scorer=ctx["stability_scorer"],
-                decision_gate=ctx["decision_gate"],
-                correlation_engine=ctx["correlation_engine"],
-                generator=ctx["generator"]
+                stability_scorer=StabilityScorer(),
+                decision_gate=DecisionGate(),
+                correlation_engine=CorrelationEngine(ctx["llm"]),
+                generator=ctx.get("generator") or GiyuGenerator(ctx["llm"])
             )
         }
     )
