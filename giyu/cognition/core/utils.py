@@ -5,6 +5,7 @@ Handles task querying, artifact mapping, safety, approval, and phase logic.
 import json
 import os
 import asyncio
+from typing import Dict, Any
 
 from ..helpers.tasks import TASK_FILE, _load_tasks, _mark_task, _reset_failed_tasks
 from ..helpers.plan import (
