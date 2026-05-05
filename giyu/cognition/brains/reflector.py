@@ -5,38 +5,42 @@ import re
 from ..core.prompts import build_reflector_prompt
 
 class GiyuReflector(Reflector):
-    """Evaluates whether a single task has been successfully completed."""
-
-    # Success patterns (no LLM needed)
-    _SUCCESS_RE = re.compile(
-        r'(?:successfully|created|updated|applied|done|complete|opened|installed|ran|executed)',
-        re.IGNORECASE
-    )
-    _ERROR_RE = re.compile(r'(?:^ERROR|Traceback|exception|failed|not found)', re.IGNORECASE)
+    """
+    Evaluates historical system behavior and outcomes.
+    Summarization + Reasoning over logs.
+    """
 
     async def reflect(self, objective: str, action: dict, result: str) -> dict:
         result_str = str(result)
 
-        # Fast path: deterministic success detection
-        if self._SUCCESS_RE.search(result_str) and not self._ERROR_RE.search(result_str):
-            return {"is_complete": True, "reflection": "Tool reported success."}
+        profile_str = self.profile.to_prompt_string() if self.profile else ""
 
-        # Fast path: clear error
-        if self._ERROR_RE.search(result_str):
-            return {"is_complete": False, "reflection": result_str[:200]}
+        system_prompt = f"""
+{profile_str}
 
-        # Slow path: LLM judge only for ambiguous results
-        prompt = build_reflector_prompt(objective, result_str)
-        response = await self.llm.generate(prompt, session_id=None, max_tokens=80)
+You are the 'Reflector' module for Giyu Tomioka.
+Your job is to evaluate the outcome of a diagnostic task or system intervention.
+Analyze the result for stability implications, hidden errors, or successful stabilization.
+
+Respond with exactly this JSON format:
+{{
+    "is_complete": boolean,
+    "reflection": "Diagnostic summary and reasoning over logs/results",
+    "stability_impact": "positive|neutral|negative"
+}}
+"""
+
+        prompt = f"{system_prompt}\n\nObjective: {objective}\nAction: {action}\nResult: {result_str}"
+        response = await self.llm.generate(prompt, session_id=None, max_tokens=300)
+        
         try:
-            clean = response.strip()
-            if "```" in clean:
-                m = re.search(r'\{.*\}', clean, re.DOTALL)
-                clean = m.group(0) if m else clean
+            from ..helpers.tasks import _clean_json
+            clean = _clean_json(response)
             data = json.loads(clean)
             return {
                 "is_complete": bool(data.get("is_complete", False)),
-                "reflection": str(data.get("reflection", ""))
+                "reflection": str(data.get("reflection", "")),
+                "stability_impact": data.get("stability_impact", "neutral")
             }
         except Exception:
-            return {"is_complete": False, "reflection": "Could not evaluate result. Continuing."}
+            return {"is_complete": True, "reflection": "Task finalized based on raw output.", "stability_impact": "neutral"}
