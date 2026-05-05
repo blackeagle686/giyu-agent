@@ -196,6 +196,38 @@ def finalize_task(task_id, task, failed, summaries):
     summaries.append(f"{'✗' if failed else '✓'} [{task.get('priority')}] {task.get('title')}")
 
 
+async def stability_check(ctx, memory, session_id) -> Dict[str, Any]:
+    """
+    Performs a deterministic stability check.
+    Returns the stability report.
+    """
+    # 1. Get metrics via tool (using SystemSnapshotReader)
+    snapshot_result = await ctx["actor"].execute({"actions": [{"tool": "system_snapshot_reader", "kwargs": {}}]})
+    import ast
+    try:
+        metrics = ast.literal_eval(snapshot_result)
+    except:
+        metrics = {"cpu_usage": 50, "ram_usage": 50, "disk_usage": 50}
+        
+    # 2. Compute score
+    stability_data = ctx["stability_scorer"].compute_score(metrics)
+    
+    # 3. Decision Gate
+    decision = ctx["decision_gate"].evaluate(stability_data)
+    
+    report = {**stability_data, **decision}
+    
+    # Log and memory
+    log_agent_action("stability_scorer", "compute_score", metrics, report, "success")
+    await memory.add_interaction(session_id, "system", f"Stability Report: {report['state'].upper()} (Score: {report['score']}) - Escalation: {report['escalation_level']}")
+    
+    # Trigger escalation if needed
+    if report["escalation_level"] in ["emergency", "escalate"]:
+        await ctx["actor"].execute({"actions": [{"tool": "core_escalation_trigger", "kwargs": {"level": report["escalation_level"], "message": f"Stability compromised: {report['state']}"}}]})
+        
+    return report
+
+
 async def init_phase(ctx, prompt, memory, session_id, is_resume) -> str:
     """Think phase (or resume). Returns objective metadata string."""
     if is_resume:
@@ -205,6 +237,10 @@ async def init_phase(ctx, prompt, memory, session_id, is_resume) -> str:
         return "Resuming previous task list..."
 
     _clear_state()
+    
+    # NEW: Stability check at the start
+    await stability_check(ctx, memory, session_id)
+    
     analyze_task = asyncio.create_task(ctx["analyzer"].analyze_workspace(prompt))
     objective = await ctx["thinker"].analyze(prompt, memory, session_id)
     log_agent_action("thinker", "analyze_prompt", {"prompt": prompt}, objective, "success")
