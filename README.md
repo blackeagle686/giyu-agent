@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./giyu/giyu-nobg.png" alt="Giyu Agent" width="400">
+</p>
+
 # Giyu Agent 🗡️
 ## Water Hashira - Stability & Monitoring
 
