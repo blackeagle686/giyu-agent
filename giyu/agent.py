@@ -9,34 +9,54 @@ async def get_giyu_agent(on_startup_progress=None):
     init_phoenix()
     await startup_phoenix()
     from .cognition import GiyuThinker, GiyuPlanner, GiyuReflector, GiyuLoop, GiyuGenerator
+    from .cognition.brains.stability_scorer import StabilityScorer
+    from .cognition.brains.decision_gate import DecisionGate
+    from .cognition.brains.analyzer import GiyuAnalyzer
+    from .cognition.brains.correlation_engine import CorrelationEngine
+    from phoenix.framework.agent.core.profile import AgentProfile
+    import os
+    
+    # Load Profile
+    profile_path = os.path.join(os.path.dirname(__file__), "profile.json")
+    profile = AgentProfile.from_json(profile_path)
     
     # Create the agent with the task-file driven loop and upgraded cognition modules
     agent = Agent(
         loop_cls=GiyuLoop,
         component_factories={
-            "thinker": lambda **ctx: GiyuThinker(ctx["llm"]),
+            "thinker": lambda **ctx: GiyuThinker(ctx["llm"], profile=profile),
             "planner": lambda **ctx: GiyuPlanner(ctx["llm"], ctx["tools"]),
-            "reflector": lambda **ctx: GiyuReflector(ctx["llm"]),
+            "reflector": lambda **ctx: GiyuReflector(ctx["llm"], profile=profile),
             "generator": lambda **ctx: GiyuGenerator(ctx["llm"]),
+            "stability_scorer": lambda **ctx: StabilityScorer(),
+            "decision_gate": lambda **ctx: DecisionGate(),
+            "analyzer": lambda **ctx: GiyuAnalyzer(),
+            "correlation_engine": lambda **ctx: CorrelationEngine(ctx["llm"]),
         }
     )
     
-    from .tools.project_generator import project_generator_tool, terminal_tool
-    from .tools.vscode_tools import vscode_search_tool, vscode_create_file_tool, vscode_edit_file_tool, vscode_delete_file_tool, vscode_terminal_run_tool
-    from .tools.file_tools import file_read_lines_tool, file_update_multi_tool, file_write_tool
+    from .tools.stability_tools import (
+        SystemSnapshotReader, LogStreamAnalyzer, AgentHeartbeatMonitor,
+        AnomalyDetector, StabilityScoreCalculator, ProcessStateTracker,
+        RollbackRecommendationEngine, CoreEscalationTrigger,
+        ResourcePressureMonitor, EventCorrelationTracker
+    )
     from phoenix.framework.agent.tools import FileReadTool, FileEditTool
     
+    # Register core tools
     agent.register_tool(FileReadTool())
-    agent.register_tool(file_write_tool) # Using our reliable custom tool
     agent.register_tool(FileEditTool())
-    agent.register_tool(project_generator_tool)
-    agent.register_tool(terminal_tool)
-    agent.register_tool(vscode_search_tool)
-    agent.register_tool(vscode_create_file_tool)
-    agent.register_tool(vscode_edit_file_tool)
-    agent.register_tool(vscode_delete_file_tool)
-    agent.register_tool(vscode_terminal_run_tool)
-    agent.register_tool(file_read_lines_tool)   # numbered output for precise edits
-    agent.register_tool(file_update_multi_tool) # surgical multi-block editor
+    
+    # Register specialized stability tools
+    agent.register_tool(SystemSnapshotReader())
+    agent.register_tool(LogStreamAnalyzer())
+    agent.register_tool(AgentHeartbeatMonitor())
+    agent.register_tool(AnomalyDetector())
+    agent.register_tool(StabilityScoreCalculator())
+    agent.register_tool(ProcessStateTracker())
+    agent.register_tool(RollbackRecommendationEngine())
+    agent.register_tool(CoreEscalationTrigger())
+    agent.register_tool(ResourcePressureMonitor())
+    agent.register_tool(EventCorrelationTracker())
     
     return agent
