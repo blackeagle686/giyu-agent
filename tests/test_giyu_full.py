@@ -87,14 +87,17 @@ async def main():
     agent = await get_giyu_agent()
     
     # Check if LLM is initialized
+    print(f"Agent Thinker LLM type: {type(agent.thinker.llm)}")
+    print(f"Agent Thinker LLM initialized: {hasattr(agent.thinker.llm, 'client') and agent.thinker.llm.client is not None}")
+    
     try:
         from phoenix.core.container import container
         llm = container.get("llm_openai")
-        print(f"LLM Client initialized: {llm.client is not None}")
-        if not llm.client:
-            print("Force initializing LLM...")
-            await llm.init()
-            print(f"LLM Client initialized after force: {llm.client is not None}")
+        print(f"Container LLM Client initialized: {llm.client is not None}")
+        if not agent.thinker.llm.client:
+            print("Force initializing Agent Thinker LLM...")
+            await agent.thinker.llm.init()
+            print(f"Agent Thinker LLM initialized after force: {agent.thinker.llm.client is not None}")
     except Exception as e:
         print(f"Error checking LLM: {e}")
 
