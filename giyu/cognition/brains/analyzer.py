@@ -44,3 +44,11 @@ class GiyuAnalyzer:
             "spike_detected": change > 0.5,
             "percent_change": round(change * 100, 2)
         }
+
+    async def analyze_workspace(self, prompt: str) -> str:
+        """
+        Mock implementation of workspace analysis for the Stability Guardian.
+        Returns a high-level summary of the monitored environment.
+        """
+        return "Workspace Context: Monitor Mode Active. Focus on stability, logs, and processes."
+
