@@ -218,9 +218,15 @@ async def stability_check(ctx, memory, session_id) -> Dict[str, Any]:
     
     report = {**stability_data, **decision}
     
+    from ..helpers.backbone import add_stability_report, update_escalation_status
+
     # Log and memory
     log_agent_action("stability_scorer", "compute_score", metrics, report, "success")
     await memory.add_interaction(session_id, "system", f"Stability Report: {report['state'].upper()} (Score: {report['score']}) - Escalation: {report['escalation_level']}")
+    
+    # Save to backbone context
+    add_stability_report(report)
+    update_escalation_status(report["escalation_level"], report["decision_reason"])
     
     # Trigger escalation if needed
     if report["escalation_level"] in ["emergency", "escalate"]:
