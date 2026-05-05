@@ -13,6 +13,45 @@ Giyu acts as the autonomous immune system of Hashira-OS. His primary responsibil
 2. **Deterministic Escalation**: Bypassing LLM hallucinations by using strict, rule-based logic to decide when a system warning should become a critical escalation.
 3. **Adaptive Context Logging**: Injecting real-time health data (`stability_reports`, `anomalies`, `escalation_state`) directly into the agent network's backbone (`giyu.context.json`), ensuring all other agents are aware of the system's condition.
 
+### 🏗️ Architecture & Workflow
+The following diagram illustrates Giyu's specialized stability-first operational flow:
+
+```mermaid
+graph TD
+    A[Signal / User Prompt] --> B{Stability Check}
+    
+    subgraph "Phase 1: Deterministic Health Check"
+        B --> C[system_snapshot_reader]
+        C --> D[StabilityScorer]
+        D --> E[DecisionGate]
+        E --> F[Update giyu.context.json]
+    end
+    
+    F --> G[Thinker Phase]
+    
+    subgraph "Phase 2: Cognitive Processing"
+        G --> H[GiyuThinker - LLM Task Decomposition]
+        G --> I[GiyuAnalyzer - Log/Metric Pattern Scan]
+    end
+    
+    H & I --> J[Planner & Actor Phase]
+    
+    subgraph "Phase 3: Action Execution"
+        J --> K[Stability Tools Execution]
+        K --> L[Action Result Capture]
+    end
+    
+    L --> M[Reflection & Correlation Phase]
+    
+    subgraph "Phase 4: Impact & Root Cause"
+        M --> N[GiyuReflector - LLM Impact Analysis]
+        M --> O[CorrelationEngine - Causal Chain Discovery]
+    end
+    
+    N & O --> P[Final Context Update & Memory Storage]
+    P --> Q[Return Response]
+```
+
 ---
 
 ### 🧠 The Hybrid Cognitive Architecture
