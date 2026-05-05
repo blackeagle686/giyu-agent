@@ -73,14 +73,31 @@ async def test_full_loop(agent):
     print("\nLoop Complete.")
 
 async def main():
-    print("Initializing Giyu Agent...")
-    # Ensure OPENAI_API_KEY is set
+    print("--- Debug Information ---")
+    print(f"CWD: {os.getcwd()}")
+    print(f"OPENAI_API_KEY: {'[SET]' if os.getenv('OPENAI_API_KEY') else '[NOT SET]'}")
+    print(f"OPENAI_BASE_URL: {os.getenv('OPENAI_BASE_URL')}")
+    print(f"OPENAI_LLM_MODEL: {os.getenv('OPENAI_LLM_MODEL')}")
+    
+    print("\nInitializing Giyu Agent...")
     if not os.getenv("OPENAI_API_KEY"):
         print("ERROR: OPENAI_API_KEY not found in .env")
         return
 
     agent = await get_giyu_agent()
     
+    # Check if LLM is initialized
+    try:
+        from phoenix.core.container import container
+        llm = container.get("llm_openai")
+        print(f"LLM Client initialized: {llm.client is not None}")
+        if not llm.client:
+            print("Force initializing LLM...")
+            await llm.init()
+            print(f"LLM Client initialized after force: {llm.client is not None}")
+    except Exception as e:
+        print(f"Error checking LLM: {e}")
+
     await test_brains(agent)
     await test_tools(agent)
     await test_full_loop(agent)
