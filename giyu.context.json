@@ -2,7 +2,7 @@
   "context_id": "85e6a02c-cd74-4a5f-95f8-251ba4374bc3",
   "metadata": {
     "created_at": "2026-05-07T00:37:14.790265",
-    "updated_at": "2026-05-07T00:38:04.880543",
+    "updated_at": "2026-05-07T00:38:22.899569",
     "original_prompt": "test the internet status"
   },
   "tasks": [
@@ -11,7 +11,7 @@
       "priority": 2,
       "title": "Network Connectivity Verification",
       "description": "Perform passive monitoring of network interface status and routing table integrity to assess internet connectivity without altering system state.",
-      "status": "pending",
+      "status": "failed",
       "type": "read"
     },
     {
@@ -65,7 +65,7 @@
       "dependencies": [
         2
       ],
-      "status": "pending"
+      "status": "failed"
     },
     {
       "plan_step_id": 4,
@@ -88,15 +88,16 @@
     "completed_steps": [],
     "pending_steps": [
       {
-        "id": 1,
-        "title": "Network Connectivity Verification"
-      },
-      {
         "id": 2,
         "title": "Anomaly Detection - Outbound Traffic"
       }
     ],
-    "failed_steps": []
+    "failed_steps": [
+      {
+        "id": 1,
+        "title": "Network Connectivity Verification"
+      }
+    ]
   },
   "memory": {},
   "stability_reports": [
@@ -279,12 +280,66 @@
         "ram_usage": 50,
         "disk_usage": 50
       }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778103490.883956,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778103496.890419,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778103502.8963616,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
     }
   ],
   "anomalies": [],
   "escalation_state": {
     "current_level": "ignore",
     "reason": "Stability score is 100.0",
-    "timestamp": "2026-05-07T00:38:04.880527"
+    "timestamp": "2026-05-07T00:38:22.899546"
   }
 }
