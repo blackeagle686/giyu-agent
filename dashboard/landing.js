@@ -3,30 +3,7 @@
  * GSAP Animations, Custom Cursor, Magnetic Buttons, & Particles
  */
 
-// --- 1. Custom Cursor ---
-const cursorDot = document.querySelector('.cursor-dot');
-const cursorOutline = document.querySelector('.cursor-outline');
-const interactiveElements = document.querySelectorAll('a, button, .feature-card');
 
-window.addEventListener('mousemove', (e) => {
-    const posX = e.clientX;
-    const posY = e.clientY;
-
-    // Dot follows exactly
-    cursorDot.style.left = `${posX}px`;
-    cursorDot.style.top = `${posY}px`;
-
-    // Outline follows with slight delay
-    cursorOutline.animate({
-        left: `${posX}px`,
-        top: `${posY}px`
-    }, { duration: 500, fill: "forwards" });
-});
-
-interactiveElements.forEach(el => {
-    el.addEventListener('mouseenter', () => cursorOutline.classList.add('hovering'));
-    el.addEventListener('mouseleave', () => cursorOutline.classList.remove('hovering'));
-});
 
 // --- 2. Magnetic Buttons ---
 const magneticButtons = document.querySelectorAll('.primary-btn, .secondary-btn, .cta-btn');
