@@ -2,7 +2,7 @@
   "context_id": "f7d53da9-eb96-4d79-8fa3-86076ad543a1",
   "metadata": {
     "created_at": "2026-05-07T02:03:33.859576",
-    "updated_at": "2026-05-07T02:04:30.530973",
+    "updated_at": "2026-05-07T02:04:38.128122",
     "original_prompt": "securty test"
   },
   "tasks": [
@@ -126,6 +126,28 @@
           "language": "python",
           "code": "import Levenshtein\n\ndef validate_input(user_input, authorized_commands):\n    \"\"\"\n    Validates user input against a list of authorized commands.\n    Uses edit distance (Levenshtein) to detect typos and flags anomalies.\n    \n    Args:\n        user_input (str): The input string from the user.\n        authorized_commands (list of str): List of allowed commands/phrases.\n    \n    Returns:\n        dict: Validation result with score, is_anomalous flag, and details.\n    \"\"\"\n    if not user_input or not isinstance(user_input, str):\n        return {\"score\": 0.0, \"is_anomalous\": True, \"reason\": \"Empty or invalid input\"}\n    \n    # Calculate minimum edit distance to any authorized command\n    distances = [Levenshtein.distance(user_input.lower().strip(), cmd.lower().strip()) for cmd in authorized_commands]\n    min_distance = min(distances) if distances else len(user_input)\n    max_possible_length = max(len(user_input), max(len(cmd) for cmd in authorized_commands)) if authorized_commands else len(user_input)\n    normalized_score = 1.0 - (min_distance / max_possible_length) if max_possible_length > 0 else 0.0\n    \n    # Flag as anomalous if score drops below threshold (e.g., < 0.6)\n    THRESHOLD = 0.6\n    is_anomalous = normalized_score < THRESHOLD\n    \n    return {\n        \"input\": user_input,\n        \"score\": round(normalized_score, 4),\n        \"min_edit_distance\": min_distance,\n        \"authorized_match\": authorized_commands[distances.index(min_distance)] if distances else None,\n        \"is_anomalous\": is_anomalous,\n        \"reason\": \"Input too dissimilar to authorized commands\" if is_anomalous else \"Valid input\"\n    }\n\n# Example usage and test\nif __name__ == \"__main__\":\n    AUTHORIZED_COMMANDS = [\n        \"ls\", \"cd\", \"pwd\", \"cat\", \"grep\", \"ps aux\", \"systemctl status\"\n    ]\n    \n    test_inputs = [\"ls\", \"lss\", \"ps aux\", \"unknowncmd\", \"sudo rm -rf /\"]\n    \n    for inp in test_inputs:\n        result = validate_input(inp, AUTHORIZED_COMMANDS)\n        print(f\"Input: '{inp}' -> Score: {result['score']}, Anomalous: {result['is_anomalous']} ({result['reason']})\")",
           "edits": []
+        }
+      ],
+      "status": "success",
+      "metadata": {
+        "model": "giyu-generator"
+      }
+    },
+    {
+      "generate_block_id": 1,
+      "plan_step_id": 4,
+      "artifacts": [
+        {
+          "type": "file_write",
+          "path": "integrity_checker.py",
+          "language": "python",
+          "code": "import re\n\ndef check_integrity(input_str):\n    \"\"\"\n    Validates input string for anomalies.\n    - Correctly spelled terms should pass (no anomaly).\n    - Misspelled words, special characters, or partial matches should be flagged.\n    \"\"\"\n    # Define a set of known correct terms (benign inputs)\n    known_terms = {\n        'hello', 'world', 'test', 'example', 'valid', 'correct', 'word'\n    }\n\n    # Normalize input\n    normalized = input_str.strip().lower()\n\n    # Check if it's a known correct term\n    if normalized in known_terms:\n        return {'status': 'valid', 'anomaly': False}\n\n    # Detect misspellings (simple heuristic: not in known terms)\n    if any(term in normalized for term in known_terms) and len(normalized) > 3:\n        # Partial match but not full word\n        return {'status': 'partial_match', 'anomaly': True}\n\n    # Check for excessive special characters (more than 2 non-alphanumeric)\n    special_char_count = len(re.findall(r'[^a-zA-Z0-9]', normalized))\n    if special_char_count > 2:\n        return {'status': 'excessive_special_chars', 'anomaly': True}\n\n    # Default to anomaly flag if not clearly valid\n    return {'status': 'misspelled_or_unknown', 'anomaly': True}\n\nif __name__ == '__main__':\n    test_cases = [\n        ('hello', False),\n        ('world', False),\n        ('tesst', True),  # misspelling\n        ('hel*o', True),  # special char + partial\n        ('valid!@#', True),  # excessive special chars\n        ('correct', False),\n        ('exampel', True),  # typo\n        ('hello123', False),  # alphanumeric correct term\n        ('worl?d', True),  # special char\n        ('', True),  # empty string\n        ('test-case', True),  # hyphenated (partial structure)\n    ]\n\n    print(\"Running integrity checks on test cases...\")\n    for inp, expected_anomaly in test_cases:\n        result = check_integrity(inp)\n        actual_anomaly = result['anomaly']\n        passed = actual_anomaly == expected_anomaly\n        status = \"PASS\" if passed else \"FAIL\"\n        print(f\"Input: '{inp}' -> {result} | {status}\")"
+        },
+        {
+          "type": "terminal",
+          "path": ".",
+          "language": "bash",
+          "code": "python3 integrity_checker.py"
         }
       ],
       "status": "success",
@@ -347,12 +369,30 @@
         "ram_usage": 50,
         "disk_usage": 50
       }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778108676.613519,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
     }
   ],
   "anomalies": [],
   "escalation_state": {
     "current_level": "ignore",
     "reason": "Stability score is 100.0",
-    "timestamp": "2026-05-07T02:04:30.530957"
+    "timestamp": "2026-05-07T02:04:36.616644"
   }
 }
