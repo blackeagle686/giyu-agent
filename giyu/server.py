@@ -6,6 +6,10 @@ This file re-exports the symbols that other modules import from
 `giyu.server` so that existing code continues to work unchanged.
 """
 
+import os
+from dotenv import load_dotenv
+load_dotenv() # Load from current directory
+
 # Re-export the FastAPI app (used by uvicorn: "giyu.server:app")
 from giyu.backend.app import app  # noqa: F401
 
