@@ -200,7 +200,7 @@ function updateLogs(reports) {
 }
 
 // Send Command
-async def sendCommand() {
+async function sendCommand() {
     const input = document.getElementById('agent-input');
     const task = input.value.trim();
     if (!task) return;
