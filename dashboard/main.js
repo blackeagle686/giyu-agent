@@ -170,7 +170,7 @@ function updateHeartbeat(heartbeats) {
         const node = document.createElement('div');
         node.className = `agent-node ${status === 'active' ? '' : 'missing'}`;
         node.innerHTML = `
-            <div class="status-icon">${status === 'active' ? '✓' : '✗'}</div>
+            <div class="status-icon"><i class="bi ${status === 'active' ? 'bi-shield-check' : 'bi-shield-exclamation'}"></i></div>
             <span>${name}</span>
         `;
         fragment.appendChild(node);
@@ -199,7 +199,7 @@ function updateTasks(tasks, plans, state) {
             planHtml = `<div class="sub-steps">` + 
                 taskPlans.map(p => `
                     <div class="sub-step ${p.status === 'done' ? 'done' : (p.status === 'active' ? 'active' : '')}">
-                        <span class="sub-icon">${p.status === 'done' ? '✓' : '○'}</span>
+                        <span class="sub-icon"><i class="bi ${p.status === 'done' ? 'bi-check-circle-fill' : 'bi-circle'}"></i></span>
                         <span class="sub-text">${p.solution?.approach || p.type}</span>
                     </div>
                 `).join('') + 
