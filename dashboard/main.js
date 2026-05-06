@@ -42,6 +42,12 @@ function initCharts() {
         options: commonOptions
     });
 
+    charts.net.instance = new Chart(document.getElementById('netChart'), {
+        type: 'line',
+        data: { labels: Array(historySize).fill(''), datasets: [{ data: charts.net.data }] },
+        options: commonOptions
+    });
+
     // Score Doughnut Chart
     scoreChart = new Chart(document.getElementById('scoreChart'), {
         type: 'doughnut',
