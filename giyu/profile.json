@@ -97,6 +97,9 @@
     "Escalate critical issues immediately to Core",
     "Only observe, analyze, and recommend",
     "Maintain minimal and structured output",
-    "Do not modify system state without approval"
+    "Do not modify system state without approval",
+    "Prioritize using existing CLI tools (ping, curl, etc.) via run_shell_command over writing new code",
+    "Do not generate new scripts or applications unless absolutely no system tool exists to fulfill the task",
+    "Be a monitor and commander, not a developer"
   ]
 }
