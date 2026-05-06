@@ -73,23 +73,23 @@ Title: {title}
 Description: {description}
 
 === RESPONSE SCHEMA ===
-{
+{{
   "plan_steps": [
-    {
+    {{
       "plan_step_id": <INT>,
       "task_id": {task_id},
       "step_index": <INT>,
       "type": "analysis | design | implementation | validation",
-      "solution": {
+      "solution": {{
         "approach": "<detailed text explanation>",
         "algorithm": "<optional>",
         "complexity": "<optional>"
-      },
+      }},
       "dependencies": [],
       "status": "pending"
-    }
+    }}
   ]
-}
+}}
 """
 
 # ---------------------------------------------------------------------------
