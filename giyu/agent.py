@@ -13,8 +13,9 @@ async def get_giyu_agent(on_startup_progress=None):
     if os.path.exists(env_path):
         load_dotenv(env_path)
     
-    print(f"DEBUG: OPENAI_API_KEY set: {'yes' if os.getenv('OPENAI_API_KEY') else 'no'}")
-    print(f"DEBUG: OPENAI_BASE_URL: {os.getenv('OPENAI_BASE_URL')}")
+    from giyu.backend.state import log
+    log.warning(f"DEBUG: OPENAI_API_KEY set: {'yes' if os.getenv('OPENAI_API_KEY') else 'no'}")
+    log.warning(f"DEBUG: OPENAI_BASE_URL: {os.getenv('OPENAI_BASE_URL')}")
     
     init_phoenix()
     await startup_phoenix()
