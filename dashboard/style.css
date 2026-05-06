@@ -24,9 +24,32 @@ body {
     color: var(--text-main);
     font-family: var(--font-main);
     overflow-x: hidden;
-    background-image: 
-        radial-gradient(circle at 10% 20%, rgba(10, 25, 47, 1) 0%, rgba(5, 11, 22, 1) 100%),
-        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415L51.8 0h2.827zM5.373 0l-.83.828L5.96 2.243 8.2 0H5.374zM30 31.172l-1.414-1.414L30 28.344l1.414 1.414L30 31.172zM30 1.172l-1.414-1.414L30-1.656l1.414 1.414L30 1.172zM1.172 30L-0.243 28.586 1.172 27.172 2.586 28.586 1.172 30zm57.656 0l-1.414-1.414L58.828 27.172 60.243 28.586 58.828 30zM30 58.828l-1.414-1.414L30 56l1.414 1.414L30 58.828z' fill='%2364ffda' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+    position: relative;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('giyu.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: -1;
+}
+
+#bg-net {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.4;
 }
 
 .app-container {
