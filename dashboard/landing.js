@@ -201,13 +201,7 @@ window.addEventListener('load', () => {
         duration: 1,
         stagger: 0.1,
         ease: 'power3.out'
-    }, "-=0.6")
-    .from('.glass-nav', {
-        y: -50,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power2.out'
-    }, "-=0.8");
+    }, "-=0.6");
 
     // --- 5. Scroll Animations ---
 
