@@ -100,6 +100,7 @@ async function updateData() {
         updateHeartbeat(status.agent_heartbeats);
         updateTasks(backbone.tasks, backbone.plans, backbone.execution_state);
         updateLogs(backbone.stability_reports);
+        updateReports(backbone.generations);
 
     } catch (error) {
         console.error('Failed to fetch status:', error);
@@ -248,6 +249,42 @@ function updateLogs(reports) {
     if (reports.length > existingCount) {
         terminal.scrollTop = terminal.scrollHeight;
     }
+}
+
+function updateReports(generations) {
+    if (!generations) return;
+    const list = document.getElementById('reports-list');
+    
+    const currentHash = JSON.stringify(generations);
+    if (list.dataset.hash === currentHash) return;
+    list.dataset.hash = currentHash;
+
+    if (generations.length === 0) {
+        list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-dim); padding: 1rem;">No reports generated yet.</p>';
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    generations.forEach((gen, index) => {
+        const item = document.createElement('div');
+        item.className = 'report-item';
+        
+        // Generations might be simple strings or objects
+        const content = typeof gen === 'string' ? gen : (gen.text || gen.content || JSON.stringify(gen));
+        const timestamp = gen.timestamp ? new Date(gen.timestamp * 1000).toLocaleString() : `Report #${index + 1}`;
+
+        item.innerHTML = `
+            <div class="report-header">
+                <span>ANALYSIS REPORT</span>
+                <span>${timestamp}</span>
+            </div>
+            <div class="report-content">${content}</div>
+        `;
+        fragment.appendChild(item);
+    });
+    
+    list.innerHTML = '';
+    list.appendChild(fragment);
 }
 
 // Send Command
