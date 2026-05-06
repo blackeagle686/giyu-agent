@@ -130,30 +130,52 @@ class ShellCommandTool(BaseTool):
 
 class SystemSecurityAuditor(BaseTool):
     name = "security_audit_tool"
-    description = "Performs a quick security audit of the system (listening ports, login history, firewall status)."
+    description = "Performs a comprehensive security audit of the system and network (ports, logins, firewall, active connections, DNS, and processes)."
     async def execute(self, **kwargs) -> ToolResult:
-        audit = {
-            "listening_ports": "Unknown",
-            "recent_logins": "Unknown",
-            "firewall_status": "Unknown"
-        }
+        report = []
         try:
-            # Check listening ports
-            ports = subprocess.check_output("ss -tuln | head -n 10", shell=True).decode()
-            audit["listening_ports"] = ports
+            # 1. System Info & Uptime
+            report.append("### 🖥️ SYSTEM CORE STATUS")
+            uname = subprocess.check_output("uname -a", shell=True).decode().strip()
+            uptime = subprocess.check_output("uptime -p", shell=True).decode().strip()
+            report.append(f"- **Kernel:** `{uname}`\n- **Uptime:** `{uptime}`")
+
+            # 2. Network Security (Ports & Connections)
+            report.append("\n### 🌐 NETWORK SECURITY AUDIT")
+            ports = subprocess.check_output("ss -tuln | head -n 15", shell=True).decode().strip()
+            report.append("#### Listening Ports (IPv4/IPv6):\n```text\n" + ports + "\n```")
             
-            # Check last 5 logins
-            logins = subprocess.check_output("last -n 5", shell=True).decode()
-            audit["recent_logins"] = logins
+            connections = subprocess.check_output("ss -atn | head -n 10", shell=True).decode().strip()
+            report.append("#### Established Connections (Top 10):\n```text\n" + connections + "\n```")
+
+            dns = subprocess.check_output("cat /etc/resolv.conf | grep nameserver", shell=True).decode().strip()
+            report.append(f"#### DNS Configuration:\n`{dns}`")
+
+            # 3. Access & Privilege Audit
+            report.append("\n### 🔑 ACCESS & PRIVILEGE AUDIT")
+            logins = subprocess.check_output("last -n 10", shell=True).decode().strip()
+            report.append("#### Recent Login Activity:\n```text\n" + logins + "\n```")
             
-            # Check UFW if available
+            # Check for failed login attempts if possible
             try:
-                ufw = subprocess.check_output("sudo ufw status 2>/dev/null || echo 'UFW not available or requires sudo'", shell=True).decode()
-                audit["firewall_status"] = ufw
+                failed = subprocess.check_output("grep 'Failed password' /var/log/auth.log | tail -n 5 2>/dev/null || echo 'Insufficient permissions to read auth logs'", shell=True).decode().strip()
+                if failed: report.append(f"#### Detected Login Failures:\n```text\n{failed}\n```")
+            except: pass
+
+            # 4. Firewall & Perimeter
+            report.append("\n### 🛡️ FIREWALL & PERIMETER")
+            try:
+                ufw = subprocess.check_output("sudo ufw status 2>/dev/null || echo 'UFW not available or requires sudo'", shell=True).decode().strip()
+                report.append(f"**UFW Status:** `{ufw}`")
             except:
-                audit["firewall_status"] = "Could not check firewall (permissions or missing tool)"
-                
-            output = f"### SECURITY AUDIT REPORT ###\n\n#### Listening Ports:\n{audit['listening_ports']}\n\n#### Recent Logins:\n{audit['recent_logins']}\n\n#### Firewall Status:\n{audit['firewall_status']}"
+                report.append("**Firewall Status:** `Could not determine (check permissions)`")
+
+            # 5. Critical Process Audit
+            report.append("\n### ⚙️ CRITICAL PROCESS AUDIT")
+            root_procs = subprocess.check_output("ps -U root -u root u | head -n 10", shell=True).decode().strip()
+            report.append("#### Top Root Processes:\n```text\n" + root_procs + "\n```")
+
+            output = "\n".join(report)
             return ToolResult(success=True, output=output)
         except Exception as e:
-            return ToolResult(success=False, output="", error=f"Audit failed: {str(e)}")
+            return ToolResult(success=False, output="", error=f"Comprehensive audit failed: {str(e)}")
