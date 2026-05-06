@@ -55,11 +55,13 @@ def create_app() -> FastAPI:
     from .routes_code import router as code_router
     from .routes_config import router as config_router
     from .routes_media import router as media_router
+    from .routes_stability import router as stability_router
 
     application.include_router(chat_router)
     application.include_router(code_router)
     application.include_router(config_router)
     application.include_router(media_router)
+    application.include_router(stability_router)
 
     return application
 
