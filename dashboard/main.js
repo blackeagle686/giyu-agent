@@ -4,7 +4,8 @@ const historySize = 20;
 const charts = {
     cpu: { instance: null, data: Array(historySize).fill(0) },
     ram: { instance: null, data: Array(historySize).fill(0) },
-    disk: { instance: null, data: Array(historySize).fill(0) }
+    disk: { instance: null, data: Array(historySize).fill(0) },
+    net: { instance: null, data: Array(historySize).fill(0) }
 };
 
 // Initialize Charts
