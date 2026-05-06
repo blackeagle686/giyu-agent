@@ -206,7 +206,14 @@ async def stability_check(ctx, memory, session_id) -> Dict[str, Any]:
     snapshot_result = await ctx["actor"].execute({"actions": [{"tool": "system_snapshot_reader", "kwargs": {}}]})
     import ast
     try:
-        metrics = ast.literal_eval(snapshot_result)
+        # tool.execute returns a string representation of the dict
+        raw_metrics = ast.literal_eval(snapshot_result)
+        metrics = {
+            "cpu_usage": raw_metrics.get("cpu_percent", 50),
+            "ram_usage": raw_metrics.get("ram_percent", 50),
+            "disk_usage": raw_metrics.get("disk_percent", 50),
+            "process_count": raw_metrics.get("process_count", 0)
+        }
     except:
         metrics = {"cpu_usage": 50, "ram_usage": 50, "disk_usage": 50}
         

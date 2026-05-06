@@ -130,9 +130,9 @@ function updateMetrics(report) {
     // The StabilityScorer might return metrics in the report.
     // In our backend implementation, we might need to ensure they are there.
     
-    const cpu = report.metrics?.cpu_percent || 0;
-    const ram = report.metrics?.ram_percent || 0;
-    const disk = report.metrics?.disk_percent || 0;
+    const cpu = report.metrics?.cpu_usage || 0;
+    const ram = report.metrics?.ram_usage || 0;
+    const disk = report.metrics?.disk_usage || 0;
 
     document.getElementById('cpu-value').textContent = Math.round(cpu);
     document.getElementById('ram-value').textContent = Math.round(ram);
