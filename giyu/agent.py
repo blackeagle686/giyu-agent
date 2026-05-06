@@ -6,6 +6,13 @@ async def get_giyu_agent(on_startup_progress=None):
     """
     Initializes the Phoenix framework, starts up services, and returns the Giyu agent.
     """
+    import os
+    from dotenv import load_dotenv
+    # Load .env from project root
+    env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+    if os.path.exists(env_path):
+        load_dotenv(env_path)
+    
     init_phoenix()
     await startup_phoenix()
     from .cognition import GiyuThinker, GiyuPlanner, GiyuReflector, GiyuLoop, GiyuGenerator
