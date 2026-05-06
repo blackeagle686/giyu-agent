@@ -14,10 +14,6 @@ async def get_giyu_agent(on_startup_progress=None):
     """
     Initializes the Phoenix framework, starts up services, and returns the Giyu agent.
     """
-    from giyu.backend.state import log
-    log.warning(f"DEBUG: OPENAI_API_KEY set: {'yes' if os.getenv('OPENAI_API_KEY') else 'no'}")
-    log.warning(f"DEBUG: OPENAI_BASE_URL: {os.getenv('OPENAI_BASE_URL')}")
-    
     init_phoenix()
     await startup_phoenix()
     from .cognition import GiyuThinker, GiyuPlanner, GiyuReflector, GiyuLoop, GiyuGenerator
