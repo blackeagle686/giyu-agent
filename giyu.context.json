@@ -2,7 +2,7 @@
   "context_id": "fce0a779-99d0-42f8-b955-1957ef95783a",
   "metadata": {
     "created_at": "2026-05-06T23:40:10.124702",
-    "updated_at": "2026-05-06T23:41:16.210773",
+    "updated_at": "2026-05-06T23:41:52.253177",
     "original_prompt": ""
   },
   "tasks": [],
@@ -230,12 +230,120 @@
         "ram_usage": 50,
         "disk_usage": 50
       }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778100082.2149084,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778100088.2213724,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778100094.229256,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778100100.2365897,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778100106.2439618,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778100112.250936,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
     }
   ],
   "anomalies": [],
   "escalation_state": {
     "current_level": "ignore",
     "reason": "Stability score is 100.0",
-    "timestamp": "2026-05-06T23:41:16.210760"
+    "timestamp": "2026-05-06T23:41:52.253165"
   }
 }
