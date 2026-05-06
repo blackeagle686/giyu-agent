@@ -209,18 +209,6 @@ window.addEventListener('load', () => {
 
     // --- 5. Scroll Animations ---
 
-    // Parallax background (simulated on canvas container)
-    gsap.to('#canvas-container', {
-        yPercent: 30,
-        ease: "none",
-        scrollTrigger: {
-            trigger: "body",
-            start: "top top",
-            end: "bottom top",
-            scrub: true
-        }
-    });
-
     // Feature Cards Stagger
     gsap.from('.feature-card', {
         scrollTrigger: {
@@ -233,6 +221,7 @@ window.addEventListener('load', () => {
         stagger: 0.2,
         ease: 'power3.out'
     });
+
 
     // Architecture Section Pin & Reveal
     const archTl = gsap.timeline({
