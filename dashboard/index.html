@@ -24,23 +24,38 @@
         </div>
     </div>
     <div class="app-container">
-        <header>
+        <header class="glass-header">
             <div class="logo">
-                <span class="icon">🌊</span>
-                <h1>GIYU</h1>
-                <span class="subtitle">System Stability Monitoring AI</span>
+                <div class="logo-icon-wrapper">
+                    <span class="icon">🌊</span>
+                </div>
+                <h1 class="gradient-text">GIYU</h1>
+                <div class="subtitle-wrapper">
+                    <span class="subtitle">System Stability Monitoring AI</span>
+                </div>
             </div>
             <div class="header-meta">
-                <div class="clock" id="clock">--:--:--</div>
+                <div class="clock-container">
+                    <i class="bi bi-clock"></i>
+                    <div class="clock" id="clock">--:--:--</div>
+                </div>
                 <div class="nav-links">
-                    <a href="/landing" class="landing-link"><i class="bi bi-house-door"></i> Landing</a>
+                    <a href="/landing" class="landing-link"><i class="bi bi-rocket-takeoff"></i> Launchpad</a>
                 </div>
                 <div class="user-profile">
-                    <span>A. Tomioka</span>
-                    <div class="status-badge" id="agent-status">ACTIVE</div>
+                    <div class="avatar">
+                        <span>AT</span>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">A. Tomioka</span>
+                        <div class="status-badge aura-active" id="agent-status">
+                            <span class="pulse-dot"></span> ACTIVE
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
+
 
         <main>
             <aside class="task-stream">
