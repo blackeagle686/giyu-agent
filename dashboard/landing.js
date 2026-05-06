@@ -7,13 +7,18 @@ const canvas = document.getElementById('net-canvas');
 const ctx = canvas.getContext('2d');
 
 let particles = [];
-const particleCount = 80;
-const connectionDistance = 150;
-const mouse = { x: null, y: null, radius: 150 };
+const particleCount = 45; // Reduced for performance
+const connectionDistance = 140;
+const mouse = { x: null, y: null, radius: 120 };
 
+let throttleTimer;
 window.addEventListener('mousemove', (event) => {
-    mouse.x = event.x;
-    mouse.y = event.y;
+    if (throttleTimer) return;
+    throttleTimer = setTimeout(() => {
+        mouse.x = event.x;
+        mouse.y = event.y;
+        throttleTimer = null;
+    }, 10); // 10ms throttle
 });
 
 function resizeCanvas() {
