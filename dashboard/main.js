@@ -71,6 +71,17 @@ function updateClock() {
 // Fetch and Update Data
 async function updateData() {
     try {
+        const healthRes = await fetch(`${API_BASE}/health`);
+        const health = await healthRes.json();
+        
+        const overlay = document.getElementById('loading-overlay');
+        if (health.agent_ready) {
+            overlay.classList.add('hidden');
+        } else {
+            overlay.classList.remove('hidden');
+            return; // Don't fetch other data if agent not ready
+        }
+
         const response = await fetch(`${API_BASE}/stability/status`);
         const status = await response.json();
         const backboneRes = await fetch(`${API_BASE}/stability/backbone`);
