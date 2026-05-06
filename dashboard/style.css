@@ -404,11 +404,9 @@ main {
     color: var(--warning);
 }
 
-/* Metrics Grid */
+/* Metrics Grid - Layout now handled by Bootstrap row/col */
 .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .metric-card {
