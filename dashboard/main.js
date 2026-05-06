@@ -155,9 +155,16 @@ function updateChart(chartObj, newValue) {
 }
 
 function updateHeartbeat(heartbeats) {
+    if (!heartbeats) return;
     const grid = document.getElementById('heartbeat-grid');
-    grid.innerHTML = '';
     
+    // Only rebuild if the number of agents or their names changed
+    // or use a hash to check for status changes
+    const currentHash = JSON.stringify(heartbeats);
+    if (grid.dataset.hash === currentHash) return;
+    grid.dataset.hash = currentHash;
+
+    const fragment = document.createDocumentFragment();
     for (const [name, status] of Object.entries(heartbeats)) {
         const node = document.createElement('div');
         node.className = `agent-node ${status === 'active' ? '' : 'missing'}`;
@@ -165,19 +172,21 @@ function updateHeartbeat(heartbeats) {
             <div class="status-icon">${status === 'active' ? '✓' : '✗'}</div>
             <span>${name}</span>
         `;
-        grid.appendChild(node);
+        fragment.appendChild(node);
     }
+    grid.innerHTML = '';
+    grid.appendChild(fragment);
 }
 
 function updateTasks(tasks, plans, state) {
     const list = document.getElementById('task-list');
-    list.innerHTML = '';
     
     if (!tasks || tasks.length === 0) {
-        list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-dim)">Waiting for tasks...</p>';
+        if (list.innerHTML !== '') list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-dim)">Waiting for tasks...</p>';
         return;
     }
 
+    const fragment = document.createDocumentFragment();
     tasks.forEach(task => {
         const taskEl = document.createElement('div');
         taskEl.className = `step ${task.status === 'in_progress' ? 'active' : (task.status === 'done' ? 'done' : '')}`;
@@ -203,8 +212,10 @@ function updateTasks(tasks, plans, state) {
                 ${planHtml}
             </div>
         `;
-        list.appendChild(taskEl);
+        fragment.appendChild(taskEl);
     });
+    list.innerHTML = '';
+    list.appendChild(fragment);
 }
 
 function updateLogs(reports) {
@@ -227,8 +238,16 @@ function updateLogs(reports) {
             <span class="${levelClass}">${report.state.toUpperCase()}: Stability Score ${Math.round(report.score)}</span>
         `;
         terminal.appendChild(line);
-        terminal.scrollTop = terminal.scrollHeight;
     });
+
+    // Cap logs at 50 lines for performance
+    while (terminal.children.length > 50) {
+        terminal.removeChild(terminal.firstChild);
+    }
+    
+    if (reports.length > existingCount) {
+        terminal.scrollTop = terminal.scrollHeight;
+    }
 }
 
 // Send Command
