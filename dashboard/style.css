@@ -114,8 +114,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 1rem;
-    background: var(--card-bg);
-    backdrop-filter: blur(10px);
+    background: #0a192f;
     border: 1px solid var(--border);
     border-radius: 12px;
 }
@@ -184,13 +183,13 @@ main {
 /* Sidebar - Task Stream */
 .task-stream {
     background: var(--card-bg);
-    backdrop-filter: blur(10px);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    contain: content;
 }
 
 .task-stream h2 {
@@ -315,10 +314,10 @@ main {
 
 .card {
     background: var(--card-bg);
-    backdrop-filter: blur(10px);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 1.5rem;
+    contain: content;
 }
 
 .card h2, .card h3 {
