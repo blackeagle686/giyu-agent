@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giyu | System Stability Guardian</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <span class="icon">🌊</span>
+                <h1>GIYU</h1>
+                <span class="subtitle">System Stability Monitoring AI</span>
+            </div>
+            <div class="header-meta">
+                <div class="clock" id="clock">--:--:--</div>
+                <div class="user-profile">
+                    <span>A. Tomioka</span>
+                    <div class="status-badge" id="agent-status">ACTIVE</div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <aside class="task-stream">
+                <h2>Task Stream</h2>
+                <div id="task-list" class="stepper">
+                    <!-- Tasks will be injected here -->
+                </div>
+            </aside>
+
+            <section class="main-dashboard">
+                <div class="stability-score-container">
+                    <div class="card score-card">
+                        <h2>Stability Score</h2>
+                        <div class="score-display">
+                            <canvas id="scoreChart"></canvas>
+                            <div class="score-value">
+                                <span id="stability-score">--</span>
+                                <small>SYSTEM HEALTH</small>
+                            </div>
+                        </div>
+                        <div class="score-meta">
+                            <span id="stability-state">STABLE</span>
+                            <div class="anomaly-count">Current anomalies: <span id="anomaly-count">0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="card metric-card">
+                        <h3>CPU USAGE</h3>
+                        <div class="metric-value"><span id="cpu-value">--</span>%</div>
+                        <div class="chart-container">
+                            <canvas id="cpuChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card metric-card">
+                        <h3>MEMORY UTILIZATION</h3>
+                        <div class="metric-value"><span id="ram-value">--</span>%</div>
+                        <div class="chart-container">
+                            <canvas id="ramChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card metric-card">
+                        <h3>DISK I/O</h3>
+                        <div class="metric-value"><span id="disk-value">--</span>%</div>
+                        <div class="chart-container">
+                            <canvas id="diskChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agent-heartbeat card">
+                    <div class="card-header">
+                        <h3>Agent Heartbeat</h3>
+                    </div>
+                    <div id="heartbeat-grid" class="heartbeat-grid">
+                        <!-- Agent status will be injected here -->
+                    </div>
+                </div>
+
+                <div class="stability-log card">
+                    <div class="card-header">
+                        <h3>Stability Log</h3>
+                    </div>
+                    <div id="log-terminal" class="terminal">
+                        <!-- Logs will be injected here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
