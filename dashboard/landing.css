@@ -145,6 +145,16 @@ nav a:hover {
     align-items: center;
 }
 
+.hero-container.single-col {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
+.hero-container.single-col .hero-content {
+    max-width: 900px;
+}
+
 .hero-content {
     max-width: 800px;
 }
@@ -192,6 +202,10 @@ nav a:hover {
 .hero-btns {
     display: flex;
     gap: 1.5rem;
+}
+
+.single-col .hero-btns {
+    justify-content: center;
 }
 
 .primary-btn, .secondary-btn {
