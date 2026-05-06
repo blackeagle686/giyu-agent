@@ -127,3 +127,33 @@ class ShellCommandTool(BaseTool):
             return ToolResult(success=True, output=result)
         except Exception as e:
             return ToolResult(success=False, output="", error=str(e))
+
+class SystemSecurityAuditor(BaseTool):
+    name = "security_audit_tool"
+    description = "Performs a quick security audit of the system (listening ports, login history, firewall status)."
+    async def execute(self, **kwargs) -> ToolResult:
+        audit = {
+            "listening_ports": "Unknown",
+            "recent_logins": "Unknown",
+            "firewall_status": "Unknown"
+        }
+        try:
+            # Check listening ports
+            ports = subprocess.check_output("ss -tuln | head -n 10", shell=True).decode()
+            audit["listening_ports"] = ports
+            
+            # Check last 5 logins
+            logins = subprocess.check_output("last -n 5", shell=True).decode()
+            audit["recent_logins"] = logins
+            
+            # Check UFW if available
+            try:
+                ufw = subprocess.check_output("sudo ufw status 2>/dev/null || echo 'UFW not available or requires sudo'", shell=True).decode()
+                audit["firewall_status"] = ufw
+            except:
+                audit["firewall_status"] = "Could not check firewall (permissions or missing tool)"
+                
+            output = f"### SECURITY AUDIT REPORT ###\n\n#### Listening Ports:\n{audit['listening_ports']}\n\n#### Recent Logins:\n{audit['recent_logins']}\n\n#### Firewall Status:\n{audit['firewall_status']}"
+            return ToolResult(success=True, output=output)
+        except Exception as e:
+            return ToolResult(success=False, output="", error=f"Audit failed: {str(e)}")
