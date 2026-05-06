@@ -25,6 +25,9 @@ async def _initialize_agent():
         agent = await get_giyu_agent()
         set_agent(agent)
         log.warning("✅ Giyu Agent is now READY.")
+        
+        # Start background stability monitoring
+        asyncio.create_task(_stability_monitor_loop(agent))
     except Exception as exc:
         log.error(f"❌ Failed to initialize agent: {exc}", exc_info=True)
 
