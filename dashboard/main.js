@@ -68,6 +68,9 @@ function updateClock() {
     document.getElementById('clock').textContent = now.toLocaleTimeString();
 }
 
+// Global State Cache
+let lastDataHash = '';
+
 // Fetch and Update Data
 async function updateData() {
     try {
@@ -79,13 +82,18 @@ async function updateData() {
             overlay.classList.add('hidden');
         } else {
             overlay.classList.remove('hidden');
-            return; // Don't fetch other data if agent not ready
+            return;
         }
 
-        const response = await fetch(`${API_BASE}/stability/status`);
-        const status = await response.json();
+        const statusRes = await fetch(`${API_BASE}/stability/status`);
+        const status = await statusRes.json();
         const backboneRes = await fetch(`${API_BASE}/stability/backbone`);
         const backbone = await backboneRes.json();
+
+        // Simple Hash Check to avoid unnecessary DOM updates
+        const currentHash = JSON.stringify({status, backbone});
+        if (currentHash === lastDataHash) return;
+        lastDataHash = currentHash;
 
         updateStabilityUI(status.current_report, status.escalation_state);
         updateMetrics(status.current_report);
@@ -95,9 +103,6 @@ async function updateData() {
 
     } catch (error) {
         console.error('Failed to fetch status:', error);
-        document.getElementById('agent-status').textContent = 'OFFLINE';
-        document.getElementById('agent-status').style.borderColor = '#f44336';
-        document.getElementById('agent-status').style.color = '#f44336';
     }
 }
 
@@ -113,7 +118,7 @@ function updateStabilityUI(report, escalation) {
     if (score < 50) color = '#f44336';
     else if (score < 80) color = '#ffb74d';
     scoreChart.data.datasets[0].backgroundColor[0] = color;
-    scoreChart.update();
+    scoreChart.update('none');
 
     document.getElementById('stability-state').style.color = color;
     document.getElementById('stability-score').style.color = color;
