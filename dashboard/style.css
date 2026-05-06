@@ -359,6 +359,47 @@ main {
 .terminal .error { color: #f44336; }
 .terminal .timestamp { color: #555; margin-right: 0.5rem; }
 
+/* Command Input */
+.command-input {
+    margin-top: 1rem;
+}
+
+.input-wrapper {
+    display: flex;
+    gap: 1rem;
+}
+
+#agent-input {
+    flex-grow: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    color: var(--text-main);
+    font-family: var(--font-main);
+    outline: none;
+}
+
+#agent-input:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+#send-btn {
+    background: var(--primary);
+    color: var(--bg-dark);
+    border: none;
+    border-radius: 8px;
+    padding: 0 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+#send-btn:hover {
+    opacity: 0.8;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
