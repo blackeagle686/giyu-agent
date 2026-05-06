@@ -25,117 +25,143 @@
             </div>
         </div>
     </div>
-    <div class="app-container">
-        <header>
-            <div class="logo">
+    <div class="container-fluid app-container py-4">
+        <header class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+            <div class="logo mb-3 mb-md-0">
                 <span class="icon">🌊</span>
-                <h1>GIYU</h1>
+                <h1 class="d-inline-block mb-0">GIYU</h1>
                 <span class="subtitle">System Stability Monitoring AI</span>
             </div>
-            <div class="header-meta">
+            <div class="header-meta d-flex align-items-center gap-4">
                 <div class="clock" id="clock">--:--:--</div>
-                <div class="user-profile">
+                <div class="user-profile d-flex align-items-center gap-2">
                     <span>A. Tomioka</span>
                     <div class="status-badge" id="agent-status">ACTIVE</div>
                 </div>
             </div>
         </header>
 
-        <main>
-            <aside class="task-stream">
-                <h2>Task Stream</h2>
-                <div id="task-list" class="stepper">
-                    <!-- Tasks will be injected here -->
+        <div class="row g-4">
+            <!-- Sidebar: Task Stream -->
+            <aside class="col-xl-3 col-lg-4 order-2 order-lg-1">
+                <div class="card task-stream h-100">
+                    <div class="card-header border-0 bg-transparent">
+                        <h2 class="h6 text-uppercase mb-0">Task Stream</h2>
+                    </div>
+                    <div id="task-list" class="stepper p-3">
+                        <!-- Tasks will be injected here -->
+                    </div>
                 </div>
             </aside>
 
-            <section class="main-dashboard">
-                <div class="stability-score-container">
-                    <div class="card score-card">
-                        <h2>Stability Score</h2>
-                        <div class="score-display">
-                            <canvas id="scoreChart"></canvas>
-                            <div class="score-value">
-                                <span id="stability-score">--</span>
-                                <small>SYSTEM HEALTH</small>
+            <!-- Main Dashboard Area -->
+            <main class="col-xl-9 col-lg-8 order-1 order-lg-2">
+                <div class="row g-4">
+                    <!-- Stability Score Section -->
+                    <div class="col-12">
+                        <div class="card score-card p-4">
+                            <h2 class="h6 text-uppercase mb-4">Stability Score</h2>
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="score-display">
+                                    <canvas id="scoreChart"></canvas>
+                                    <div class="score-value text-center">
+                                        <span id="stability-score" class="display-4 fw-bold">--</span>
+                                        <small class="d-block text-uppercase">System Health</small>
+                                    </div>
+                                </div>
+                                <div class="score-meta mt-3 text-center">
+                                    <span id="stability-state" class="h5 fw-bold">STABLE</span>
+                                    <div class="anomaly-count text-warning">Current anomalies: <span id="anomaly-count">0</span></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="score-meta">
-                            <span id="stability-state">STABLE</span>
-                            <div class="anomaly-count">Current anomalies: <span id="anomaly-count">0</span></div>
+                    </div>
+
+                    <!-- Metrics Row -->
+                    <div class="col-12">
+                        <div class="row g-3">
+                            <div class="col-sm-6 col-xl-3">
+                                <div class="card metric-card p-3 h-100">
+                                    <h3 class="h6 text-uppercase mb-3">CPU Usage</h3>
+                                    <div class="h3 fw-bold mb-2"><span id="cpu-value">--</span>%</div>
+                                    <div class="chart-container" style="height: 60px;">
+                                        <canvas id="cpuChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-xl-3">
+                                <div class="card metric-card p-3 h-100">
+                                    <h3 class="h6 text-uppercase mb-3">Memory</h3>
+                                    <div class="h3 fw-bold mb-2"><span id="ram-value">--</span>%</div>
+                                    <div class="chart-container" style="height: 60px;">
+                                        <canvas id="ramChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-xl-3">
+                                <div class="card metric-card p-3 h-100">
+                                    <h3 class="h6 text-uppercase mb-3">Disk I/O</h3>
+                                    <div class="h3 fw-bold mb-2"><span id="disk-value">--</span>%</div>
+                                    <div class="chart-container" style="height: 60px;">
+                                        <canvas id="diskChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-xl-3">
+                                <div class="card metric-card p-3 h-100">
+                                    <h3 class="h6 text-uppercase mb-3">Net Latency</h3>
+                                    <div class="h3 fw-bold mb-2"><span id="net-value">--</span>ms</div>
+                                    <div class="chart-container" style="height: 60px;">
+                                        <canvas id="netChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Agent Heartbeat -->
+                    <div class="col-lg-6 col-xl-4">
+                        <div class="card p-3 h-100">
+                            <h3 class="h6 text-uppercase mb-3">Agent Heartbeat</h3>
+                            <div id="heartbeat-grid" class="heartbeat-grid g-2">
+                                <!-- Agent status will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Stability Reports -->
+                    <div class="col-lg-6 col-xl-8">
+                        <div class="card p-3 h-100">
+                            <h3 class="h6 text-uppercase mb-3"><i class="bi bi-file-earmark-text"></i> AI Stability Reports</h3>
+                            <div id="reports-list" class="reports-list">
+                                <p class="text-muted p-3">No reports generated yet.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stability Log -->
+                    <div class="col-12">
+                        <div class="card p-3">
+                            <h3 class="h6 text-uppercase mb-3">Stability Log</h3>
+                            <div id="log-terminal" class="terminal" style="height: 150px;">
+                                <!-- Logs will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Command Input -->
+                    <div class="col-12">
+                        <div class="card p-3">
+                            <h3 class="h6 text-uppercase mb-3">Command Agent</h3>
+                            <div class="input-group">
+                                <input type="text" id="agent-input" class="form-control bg-dark border-secondary text-white" placeholder="Type a command (e.g., 'Run stability check')">
+                                <button id="send-btn" class="btn btn-primary px-4 fw-bold">SEND</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="metrics-grid">
-                    <div class="card metric-card">
-                        <h3>CPU USAGE</h3>
-                        <div class="metric-value"><span id="cpu-value">--</span>%</div>
-                        <div class="chart-container">
-                            <canvas id="cpuChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card metric-card">
-                        <h3>MEMORY UTILIZATION</h3>
-                        <div class="metric-value"><span id="ram-value">--</span>%</div>
-                        <div class="chart-container">
-                            <canvas id="ramChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card metric-card">
-                        <h3>DISK I/O</h3>
-                        <div class="metric-value"><span id="disk-value">--</span>%</div>
-                        <div class="chart-container">
-                            <canvas id="diskChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card metric-card">
-                        <h3>NETWORK LATENCY</h3>
-                        <div class="metric-value"><span id="net-value">--</span>ms</div>
-                        <div class="chart-container">
-                            <canvas id="netChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="agent-heartbeat card">
-                    <div class="card-header">
-                        <h3>Agent Heartbeat</h3>
-                    </div>
-                    <div id="heartbeat-grid" class="heartbeat-grid">
-                        <!-- Agent status will be injected here -->
-                    </div>
-                </div>
-
-                <div class="stability-reports card">
-                    <div class="card-header">
-                        <h3><i class="bi bi-file-earmark-text"></i> AI Stability Reports</h3>
-                    </div>
-                    <div id="reports-list" class="reports-list">
-                        <p style="font-size: 0.8rem; color: var(--text-dim); padding: 1rem;">No reports generated yet.</p>
-                    </div>
-                </div>
-
-                <div class="stability-log card">
-                    <div class="card-header">
-                        <h3>Stability Log</h3>
-                    </div>
-                    <div id="log-terminal" class="terminal">
-                        <!-- Logs will be injected here -->
-                    </div>
-                </div>
-
-                <div class="command-input card">
-                    <div class="card-header">
-                        <h3>Command Agent</h3>
-                    </div>
-                    <div class="input-wrapper">
-                        <input type="text" id="agent-input" placeholder="Type a command (e.g., 'Run stability check')">
-                        <button id="send-btn">SEND</button>
-                    </div>
-                </div>
-            </section>
-        </main>
+            </main>
+        </div>
     </div>
     <script src="main.js"></script>
 </body>
