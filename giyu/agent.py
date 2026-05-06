@@ -1,3 +1,11 @@
+import os
+from dotenv import load_dotenv
+
+# Load .env from project root at module level
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+
 from phoenix import Agent, init_phoenix, startup_phoenix
 from .tools.project_generator import project_generator_tool
 from .tools.file_tools import file_read_lines_tool, file_update_multi_tool
@@ -6,13 +14,6 @@ async def get_giyu_agent(on_startup_progress=None):
     """
     Initializes the Phoenix framework, starts up services, and returns the Giyu agent.
     """
-    import os
-    from dotenv import load_dotenv
-    # Load .env from project root
-    env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
-    if os.path.exists(env_path):
-        load_dotenv(env_path)
-    
     from giyu.backend.state import log
     log.warning(f"DEBUG: OPENAI_API_KEY set: {'yes' if os.getenv('OPENAI_API_KEY') else 'no'}")
     log.warning(f"DEBUG: OPENAI_BASE_URL: {os.getenv('OPENAI_BASE_URL')}")
