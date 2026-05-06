@@ -112,3 +112,18 @@ class EventCorrelationTracker(BaseTool):
     async def execute(self, events: List[str], **kwargs) -> ToolResult:
         # This would ideally call the CorrelationEngine brain, but as a tool it just returns the input for now
         return ToolResult(success=True, output=f"Tracking correlation for {len(events)} events: {events}")
+
+class ShellCommandTool(BaseTool):
+    name = "run_shell_command"
+    description = "Safely executes system commands for diagnostics (e.g., 'ip addr', 'ping -c 1 8.8.8.8', 'netstat')."
+    async def execute(self, command: str, **kwargs) -> ToolResult:
+        try:
+            # Prevent dangerous commands (very basic check)
+            forbidden = ["rm ", "mv ", "dd ", "> /dev/", ":(){ :|:& };:"]
+            if any(f in command for f in forbidden):
+                return ToolResult(success=False, output="", error="Command rejected for safety reasons.")
+                
+            result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT).decode()
+            return ToolResult(success=True, output=result)
+        except Exception as e:
+            return ToolResult(success=False, output="", error=str(e))

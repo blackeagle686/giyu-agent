@@ -53,7 +53,7 @@ async def get_giyu_agent(on_startup_progress=None):
         SystemSnapshotReader, LogStreamAnalyzer, AgentHeartbeatMonitor,
         AnomalyDetector, StabilityScoreCalculator, ProcessStateTracker,
         RollbackRecommendationEngine, CoreEscalationTrigger,
-        ResourcePressureMonitor, EventCorrelationTracker
+        ResourcePressureMonitor, EventCorrelationTracker, ShellCommandTool
     )
     from phoenix.framework.agent.tools import FileReadTool, FileEditTool
     
