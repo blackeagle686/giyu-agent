@@ -61,8 +61,9 @@ const canvas = document.getElementById('net-canvas');
 const ctx = canvas.getContext('2d');
 
 let particles = [];
-const particleCount = 45; // Optimized count
+const particleCount = 25; // Heavily optimized count
 const connectionDistance = 140;
+const connectionDistanceSq = connectionDistance * connectionDistance; // Precalculated for performance
 const mouse = { x: null, y: null, radius: 150 };
 
 function resizeCanvas() {
@@ -109,9 +110,11 @@ class Particle {
         // Fluid Mouse interaction
         const dx = mouse.x - this.x;
         const dy = mouse.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const distSq = dx * dx + dy * dy;
+        const radiusSq = mouse.radius * mouse.radius;
         
-        if (distance < mouse.radius) {
+        if (distSq < radiusSq) {
+            const distance = Math.sqrt(distSq);
             const force = (mouse.radius - distance) / mouse.radius;
             // Push away softly
             this.x -= dx * force * 0.03;
@@ -141,12 +144,13 @@ function animateParticles() {
         particles[i].update();
         particles[i].draw();
 
-        for (let j = i; j < particles.length; j++) {
+        for (let j = i + 1; j < particles.length; j++) {
             const dx = particles[i].x - particles[j].x;
             const dy = particles[i].y - particles[j].y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+            const distSq = dx * dx + dy * dy;
 
-            if (distance < connectionDistance) {
+            if (distSq < connectionDistanceSq) {
+                const distance = Math.sqrt(distSq); // Only calculate sqrt if within range
                 const opacity = 1 - (distance / connectionDistance);
                 ctx.strokeStyle = `rgba(59, 130, 246, ${opacity * 0.15})`; // Blue links
                 ctx.lineWidth = 1;
