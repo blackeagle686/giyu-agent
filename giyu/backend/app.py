@@ -77,6 +77,23 @@ def create_app() -> FastAPI:
     async def health():
         return {"status": "ok", "agent_ready": get_agent() is not None}
 
+    # Landing Page Routes
+    from fastapi.responses import FileResponse
+    dashboard_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "dashboard")
+    landing_path = os.path.join(dashboard_path, "landing.html")
+
+    @application.get("/")
+    async def root():
+        if os.path.exists(landing_path):
+            return FileResponse(landing_path)
+        return {"message": "Giyu Agent API is running. Dashboard is at /dashboard"}
+
+    @application.get("/landing")
+    async def landing():
+        if os.path.exists(landing_path):
+            return FileResponse(landing_path)
+        return {"error": "Landing page not found"}
+
     # Register route modules
     from .routes_chat import router as chat_router
     from .routes_code import router as code_router
