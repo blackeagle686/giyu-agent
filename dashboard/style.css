@@ -562,9 +562,62 @@ main {
 
 .report-content {
     font-size: 0.85rem;
-    line-height: 1.5;
-    white-space: pre-wrap;
+    line-height: 1.6;
     color: var(--text-main);
+}
+
+.report-content h1, .report-content h2, .report-content h3 {
+    color: var(--primary);
+    margin: 1rem 0 0.5rem 0;
+    font-weight: 600;
+}
+
+.report-content h1 { font-size: 1.2rem; }
+.report-content h2 { font-size: 1.1rem; }
+.report-content h3 { font-size: 1rem; }
+
+.report-content p {
+    margin-bottom: 0.8rem;
+}
+
+.report-content ul, .report-content ol {
+    margin-bottom: 0.8rem;
+    padding-left: 1.5rem;
+}
+
+.report-content li {
+    margin-bottom: 0.3rem;
+}
+
+.report-content code {
+    background: rgba(100, 255, 218, 0.1);
+    color: var(--primary);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+}
+
+.report-content pre {
+    background: #000;
+    border: 1px solid var(--border);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1rem 0;
+}
+
+.report-content pre code {
+    background: transparent;
+    padding: 0;
+}
+
+.report-content blockquote {
+    border-left: 3px solid var(--primary);
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: var(--text-dim);
+    font-style: italic;
 }
 
 /* Custom Scrollbar */
