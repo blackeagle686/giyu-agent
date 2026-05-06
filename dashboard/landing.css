@@ -555,9 +555,95 @@ footer {
 .footer-logo {
     color: white;
     font-weight: 800;
-    display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+/* Powered By Badge */
+.powered-by-badge {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 999;
+    background: rgba(10, 25, 47, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(100, 255, 218, 0.2);
+    border-radius: 12px;
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s;
+    cursor: default;
+    overflow: hidden;
+}
+
+.powered-by-badge:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: rgba(100, 255, 218, 0.5);
+}
+
+.powered-by-badge .badge-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(100, 255, 218, 0.3), transparent 30%);
+    animation: rotate-glow 4s linear infinite;
+    z-index: -1;
+    opacity: 0.5;
+}
+
+@keyframes rotate-glow {
+    100% { transform: rotate(360deg); }
+}
+
+.powered-by-badge .badge-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.badge-icon {
+    font-size: 1.5rem;
+    color: var(--accent-teal);
+    filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.5));
+    animation: pulse-icon 2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-icon {
+    0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(20, 184, 166, 0.4)); }
+    100% { transform: scale(1.1); filter: drop-shadow(0 0 12px rgba(20, 184, 166, 0.8)); }
+}
+
+.badge-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.powered-text {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.powered-text .highlight {
+    color: var(--accent-teal);
+    font-weight: 800;
+}
+
+.arch-text {
+    font-size: 0.6rem;
+    color: var(--text-primary);
+    letter-spacing: 2px;
+    opacity: 0.8;
 }
 
 /* Mobile Responsive */
@@ -566,4 +652,10 @@ footer {
     .split-layout { grid-template-columns: 1fr; }
     nav ul { display: none; }
     .hero-btns { flex-direction: column; }
+    .powered-by-badge {
+        bottom: 1rem;
+        right: 1rem;
+        padding: 0.5rem 0.8rem;
+    }
+    .powered-by-badge .badge-text { display: none; }
 }
