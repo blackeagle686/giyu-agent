@@ -139,20 +139,24 @@ function updateMetrics(report) {
     const cpu = report.metrics?.cpu_usage || 0;
     const ram = report.metrics?.ram_usage || 0;
     const disk = report.metrics?.disk_usage || 0;
+    const net = report.metrics?.net_latency || 0;
 
     document.getElementById('cpu-value').textContent = Math.round(cpu);
     document.getElementById('ram-value').textContent = Math.round(ram);
     document.getElementById('disk-value').textContent = Math.round(disk);
+    document.getElementById('net-value').textContent = Math.round(net);
 
     updateChart(charts.cpu, cpu);
     updateChart(charts.ram, ram);
     updateChart(charts.disk, disk);
+    updateChart(charts.net, net);
 }
 
 function updateChart(chartObj, newValue) {
+    if (!chartObj || !chartObj.data) return;
     chartObj.data.push(newValue);
     chartObj.data.shift();
-    chartObj.instance.update();
+    chartObj.instance.update('none');
 }
 
 function updateHeartbeat(heartbeats) {
@@ -252,7 +256,7 @@ function updateLogs(reports) {
 }
 
 function updateReports(generations) {
-    if (!generations) return;
+    if (!generations || !window.marked) return;
     const list = document.getElementById('reports-list');
     
     const currentHash = JSON.stringify(generations);
@@ -273,12 +277,15 @@ function updateReports(generations) {
         const content = typeof gen === 'string' ? gen : (gen.text || gen.content || JSON.stringify(gen));
         const timestamp = gen.timestamp ? new Date(gen.timestamp * 1000).toLocaleString() : `Report #${index + 1}`;
 
+        // Use marked for markdown preview
+        const htmlContent = marked.parse(content);
+
         item.innerHTML = `
             <div class="report-header">
-                <span>ANALYSIS REPORT</span>
+                <span><i class="bi bi-robot"></i> ANALYSIS REPORT</span>
                 <span>${timestamp}</span>
             </div>
-            <div class="report-content">${content}</div>
+            <div class="report-content">${htmlContent}</div>
         `;
         fragment.appendChild(item);
     });
