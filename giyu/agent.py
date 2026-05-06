@@ -26,8 +26,6 @@ async def get_giyu_agent(on_startup_progress=None):
     from .cognition.brains.analyzer import GiyuAnalyzer
     from .cognition.brains.correlation_engine import CorrelationEngine
     from phoenix.framework.agent.core.profile import AgentProfile
-    import os
-    
     # Load Profile
     profile_path = os.path.join(os.path.dirname(__file__), "profile.json")
     profile = AgentProfile.from_json(profile_path)
