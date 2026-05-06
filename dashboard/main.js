@@ -164,7 +164,7 @@ function updateHeartbeat(heartbeats) {
     }
 }
 
-function updateTasks(tasks, state) {
+function updateTasks(tasks, plans, state) {
     const list = document.getElementById('task-list');
     list.innerHTML = '';
     
@@ -174,15 +174,31 @@ function updateTasks(tasks, state) {
     }
 
     tasks.forEach(task => {
-        const step = document.createElement('div');
-        step.className = `step ${task.status === 'in_progress' ? 'active' : (task.status === 'done' ? 'done' : '')}`;
-        step.innerHTML = `
+        const taskEl = document.createElement('div');
+        taskEl.className = `step ${task.status === 'in_progress' ? 'active' : (task.status === 'done' ? 'done' : '')}`;
+        
+        let planHtml = '';
+        const taskPlans = (plans || []).filter(p => p.task_id === task.id);
+        
+        if (taskPlans.length > 0) {
+            planHtml = `<div class="sub-steps">` + 
+                taskPlans.map(p => `
+                    <div class="sub-step ${p.status === 'done' ? 'done' : (p.status === 'active' ? 'active' : '')}">
+                        <span class="sub-icon">${p.status === 'done' ? '✓' : '○'}</span>
+                        <span class="sub-text">${p.solution?.approach || p.type}</span>
+                    </div>
+                `).join('') + 
+                `</div>`;
+        }
+
+        taskEl.innerHTML = `
             <div class="step-content">
                 <h4>${task.title}</h4>
                 <p>${task.description || ''}</p>
+                ${planHtml}
             </div>
         `;
-        list.appendChild(step);
+        list.appendChild(taskEl);
     });
 }
 
