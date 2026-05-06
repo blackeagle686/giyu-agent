@@ -199,11 +199,79 @@ function updateLogs(reports) {
     });
 }
 
+// Send Command
+async def sendCommand() {
+    const input = document.getElementById('agent-input');
+    const task = input.value.trim();
+    if (!task) return;
+
+    input.value = '';
+    const session_id = 'gui_session_' + Math.floor(Math.random() * 1000);
+    
+    // Clear terminal and tasks
+    document.getElementById('log-terminal').innerHTML = '<div class="line"><span class="info">Sending command to Giyu...</span></div>';
+    document.getElementById('task-list').innerHTML = '';
+
+    const response = await fetch(`${API_BASE}/chat/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task, session_id, mode: 'auto' })
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+        for (const line of lines) {
+            if (line.startsWith('data: ')) {
+                const event = JSON.parse(line.substring(6));
+                handleAgentEvent(event);
+            }
+        }
+    }
+}
+
+function handleAgentEvent(event) {
+    const terminal = document.getElementById('log-terminal');
+    const line = document.createElement('div');
+    line.className = 'line';
+
+    if (event.type === 'status') {
+        line.innerHTML = `<span class="info">STATUS: ${event.content}</span>`;
+    } else if (event.type === 'chunk') {
+        // Just log the text chunk to the terminal
+        line.innerHTML = `<span>${event.content}</span>`;
+    } else if (event.type === 'error') {
+        line.innerHTML = `<span class="error">ERROR: ${event.content}</span>`;
+    } else if (event.type === 'done') {
+        line.innerHTML = `<span class="success">✓ COMMAND COMPLETE</span>`;
+    }
+
+    if (line.innerHTML) {
+        terminal.appendChild(line);
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+    
+    // Refresh tasks from backbone frequently during execution
+    updateData();
+}
+
 // Main Initialization
 window.addEventListener('DOMContentLoaded', () => {
     initCharts();
     setInterval(updateClock, 1000);
     setInterval(updateData, 2000);
+    
+    document.getElementById('send-btn').addEventListener('click', sendCommand);
+    document.getElementById('agent-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendCommand();
+    });
+
     updateClock();
     updateData();
 });
