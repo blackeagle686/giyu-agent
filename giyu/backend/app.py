@@ -56,12 +56,18 @@ def create_app() -> FastAPI:
     from .routes_config import router as config_router
     from .routes_media import router as media_router
     from .routes_stability import router as stability_router
+    from fastapi.staticfiles import StaticFiles
 
     application.include_router(chat_router)
     application.include_router(code_router)
     application.include_router(config_router)
     application.include_router(media_router)
     application.include_router(stability_router)
+
+    # Mount Dashboard
+    dashboard_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "dashboard")
+    if os.path.exists(dashboard_path):
+        application.mount("/dashboard", StaticFiles(directory=dashboard_path, html=True), name="dashboard")
 
     return application
 
