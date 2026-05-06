@@ -2,7 +2,7 @@
   "context_id": "fce0a779-99d0-42f8-b955-1957ef95783a",
   "metadata": {
     "created_at": "2026-05-06T23:40:10.124702",
-    "updated_at": "2026-05-06T23:42:04.271066",
+    "updated_at": "2026-05-06T23:42:28.299954",
     "original_prompt": ""
   },
   "tasks": [],
@@ -374,12 +374,84 @@
         "ram_usage": 50,
         "disk_usage": 50
       }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778100130.2759216,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778100136.2840512,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778100142.290093,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778100148.2974231,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
     }
   ],
   "anomalies": [],
   "escalation_state": {
     "current_level": "ignore",
     "reason": "Stability score is 100.0",
-    "timestamp": "2026-05-06T23:42:04.271050"
+    "timestamp": "2026-05-06T23:42:28.299942"
   }
 }

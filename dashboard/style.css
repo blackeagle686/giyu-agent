@@ -272,6 +272,40 @@ main {
     color: var(--text-dim);
 }
 
+.sub-steps {
+    margin-top: 0.8rem;
+    padding-left: 0.5rem;
+    border-left: 1px solid rgba(100, 255, 218, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sub-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+}
+
+.sub-step.active {
+    color: var(--primary);
+}
+
+.sub-step.done {
+    color: var(--success);
+}
+
+.sub-icon {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+}
+
+.sub-text {
+    line-height: 1.2;
+}
+
 /* Main Dashboard */
 .main-dashboard {
     display: flex;

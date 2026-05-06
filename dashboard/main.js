@@ -90,7 +90,7 @@ async function updateData() {
         updateStabilityUI(status.current_report, status.escalation_state);
         updateMetrics(status.current_report);
         updateHeartbeat(status.agent_heartbeats);
-        updateTasks(backbone.tasks, backbone.execution_state);
+        updateTasks(backbone.tasks, backbone.plans, backbone.execution_state);
         updateLogs(backbone.stability_reports);
 
     } catch (error) {
