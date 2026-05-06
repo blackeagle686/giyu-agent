@@ -35,10 +35,9 @@ async def _initialize_agent():
 async def _stability_monitor_loop(agent):
     """Periodically runs the stability check to update the backbone."""
     from giyu.cognition.core.utils import stability_check
-    from phoenix.framework.agent.memory import AgentMemory
     
-    # Create a dummy memory and session for the background check
-    memory = AgentMemory()
+    # Use the agent's existing memory
+    memory = agent.memory
     session_id = "background_monitor"
     
     ctx = {
