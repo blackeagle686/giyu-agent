@@ -30,9 +30,13 @@ async def get_stability_history(limit: int = 50):
     return data.get("stability_reports", [])[-limit:]
 
 @router.get("/backbone")
-async def get_full_backbone():
-    """Returns the entire backbone context."""
-    return _load_backbone()
+async def get_backbone_slim():
+    """Returns the backbone context with limited stability history for performance."""
+    backbone = _load_backbone()
+    # Only return the last 5 reports to keep payload light
+    if "stability_reports" in backbone:
+        backbone["stability_reports"] = backbone["stability_reports"][-5:]
+    return backbone
 
 async def _get_agent_heartbeats():
     """Helper to get heartbeats of all agents."""
