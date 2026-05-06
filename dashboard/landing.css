@@ -26,39 +26,6 @@ body {
     font-family: 'Inter', sans-serif;
     line-height: 1.6;
     overflow-x: hidden;
-    cursor: none; /* Hide default cursor */
-}
-
-/* Custom Cursor */
-.cursor-dot,
-.cursor-outline {
-    position: fixed;
-    top: 0;
-    left: 0;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    z-index: 9999;
-    pointer-events: none;
-}
-
-.cursor-dot {
-    width: 8px;
-    height: 8px;
-    background-color: var(--accent-teal);
-}
-
-.cursor-outline {
-    width: 40px;
-    height: 40px;
-    border: 1px solid rgba(20, 184, 166, 0.5);
-    transition: width 0.2s, height 0.2s, background-color 0.2s;
-}
-
-.cursor-outline.hovering {
-    width: 60px;
-    height: 60px;
-    background-color: rgba(20, 184, 166, 0.1);
-    border-color: transparent;
 }
 
 /* Preloader */
@@ -451,10 +418,10 @@ nav a:hover {
 }
 
 .glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
+    background: rgba(15, 23, 42, 0.85); /* Solidified for performance */
     border: 1px solid var(--glass-border);
 }
+
 
 .status-ring {
     width: 150px;
@@ -565,9 +532,7 @@ footer {
     bottom: 2rem;
     left: 2rem;
     z-index: 999;
-    background: rgba(10, 25, 47, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(10, 25, 47, 0.95); /* Opaque for performance */
     border: 1px solid rgba(100, 255, 218, 0.2);
     border-radius: 12px;
     padding: 0.8rem 1.2rem;
