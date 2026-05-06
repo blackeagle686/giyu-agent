@@ -297,7 +297,7 @@ function handleAgentEvent(event) {
 window.addEventListener('DOMContentLoaded', () => {
     initCharts();
     setInterval(updateClock, 1000);
-    setInterval(updateData, 2000);
+    setInterval(updateData, 3000);
     
     document.getElementById('send-btn').addEventListener('click', sendCommand);
     document.getElementById('agent-input').addEventListener('keypress', (e) => {
