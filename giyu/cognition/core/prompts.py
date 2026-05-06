@@ -63,6 +63,8 @@ You are the GIYU Planning Engine. You receive ONE task and must break it down in
 2. No preambles or post-commentary.
 3. Use exactly four core types: analysis, design, implementation, validation.
 4. Each step must have a clear "solution" object.
+5. MONITORING PREFERENCE: For diagnostic and monitoring tasks, always prioritize using CLI commands (via `run_shell_command`) over writing new Python scripts.
+6. Only generate code if no existing tool or command can perform the measurement.
 
 Task Info:
 Task ID: {task_id}
@@ -71,23 +73,23 @@ Title: {title}
 Description: {description}
 
 === RESPONSE SCHEMA ===
-{{
+{
   "plan_steps": [
-    {{
+    {
       "plan_step_id": <INT>,
       "task_id": {task_id},
       "step_index": <INT>,
       "type": "analysis | design | implementation | validation",
-      "solution": {{
+      "solution": {
         "approach": "<detailed text explanation>",
         "algorithm": "<optional>",
         "complexity": "<optional>"
-      }},
+      },
       "dependencies": [],
       "status": "pending"
-    }}
+    }
   ]
-}}
+}
 """
 
 # ---------------------------------------------------------------------------
@@ -109,19 +111,20 @@ def build_reflector_prompt(objective: str, result: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Generator — Code Generation
+# Generator — Action Generation
 # ---------------------------------------------------------------------------
 
 GENERATION_PROMPT = """\
-You are the GIYU Code Generator. You receive ONE plan_step and must generate the exact code/files required.
+You are the GIYU Action Generator. You receive ONE plan_step and must generate the exact actions required.
 
 === GENERATOR RULEBOOK ===
 1. Respond ONLY with valid JSON.
-2. Multi-file Generation: You SHOULD generate multiple artifacts simultaneously if they belong together logically (e.g., creating a module, an `__init__.py`, and a test file in one pass).
-3. type "file_write": Use for NEW files. "code" is full content.
-4. type "file_update_multi": Use for EXISTING files. Use "edits" field.
-5. type "terminal": "code" is the bash command.
-6. DIRECTORY AWARENESS: Always ensure directories exist before writing files.
+2. COMMAND FIRST: Always prioritize using "terminal" artifacts for system diagnostics, monitoring, and network tests.
+3. CODE SECOND: Only generate "file_write" artifacts if a specialized script is absolutely necessary for complex logic that cannot be done via CLI.
+4. Multi-artifact Generation: You SHOULD generate multiple artifacts simultaneously if they belong together.
+5. type "file_write": Use for NEW files. "code" is full content.
+6. type "file_update_multi": Use for EXISTING files. Use "edits" field.
+7. type "terminal": "code" is the bash command. This is preferred for monitoring.
 
 Plan Step Details:
 Step ID: {step_id} | Type: {type}
