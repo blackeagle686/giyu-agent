@@ -32,6 +32,31 @@ async def _initialize_agent():
         log.error(f"❌ Failed to initialize agent: {exc}", exc_info=True)
 
 
+async def _stability_monitor_loop(agent):
+    """Periodically runs the stability check to update the backbone."""
+    from giyu.cognition.core.utils import stability_check
+    from phoenix.framework.agent.memory import AgentMemory
+    
+    # Create a dummy memory and session for the background check
+    memory = AgentMemory()
+    session_id = "background_monitor"
+    
+    ctx = {
+        "actor": agent.actor,
+        "stability_scorer": agent.stability_scorer,
+        "decision_gate": agent.decision_gate,
+        "correlation_engine": agent.correlation_engine,
+        "bg": set()
+    }
+    
+    while True:
+        try:
+            await stability_check(ctx, memory, session_id)
+        except Exception as e:
+            log.error(f"Stability Monitor Error: {e}")
+        await asyncio.sleep(5) # Update every 5 seconds
+
+
 def create_app() -> FastAPI:
     """Build and return a fully configured FastAPI application."""
     application = FastAPI(
