@@ -216,7 +216,7 @@ async def stability_check(ctx, memory, session_id) -> Dict[str, Any]:
     # 3. Decision Gate
     decision = ctx["decision_gate"].evaluate(stability_data)
     
-    report = {**stability_data, **decision}
+    report = {**stability_data, **decision, "metrics": metrics}
     
     from ..helpers.backbone import add_stability_report, update_escalation_status
 
