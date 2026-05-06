@@ -10,6 +10,21 @@
     <link rel="stylesheet" href="/dashboard/landing.css">
 </head>
 <body>
+    <!-- Custom Cursor -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- Preloader -->
+    <div class="preloader">
+        <div class="preloader-content">
+            <span class="logo-icon loader-spin">🌊</span>
+            <div class="loader-text">Initializing Guardian...</div>
+            <div class="loader-progress">
+                <div class="loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="canvas-container">
         <canvas id="net-canvas"></canvas>
     </div>
@@ -35,8 +50,8 @@
         <section id="hero" class="hero">
             <div class="container hero-container single-col">
                 <div class="hero-content">
-                    <h1 class="fade-up">The Water Hashira <br><span class="gradient-text">System Stability Guardian</span></h1>
-                    <p class="fade-up delay-1">Specialized diagnostic sentinel for Hashira-OS. Prioritizing precision, deterministic safety, and real-time anomaly detection.</p>
+                    <h1 class="split-text">The Water Hashira <br><span class="gradient-text">System Stability Guardian</span></h1>
+                    <p class="fade-in-up">Specialized diagnostic sentinel for Hashira-OS. Prioritizing precision, deterministic safety, and real-time anomaly detection.</p>
                     <div class="hero-btns fade-up delay-2">
                         <a href="#features" class="primary-btn">Explore Capabilities</a>
                         <a href="/dashboard" class="secondary-btn">Open Dashboard</a>
@@ -116,6 +131,11 @@
             </div>
         </div>
     </footer>
+
+    <!-- GSAP & Plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/split-type"></script>
 
     <script src="/dashboard/landing.js"></script>
 </body>
