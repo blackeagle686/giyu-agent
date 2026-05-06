@@ -88,6 +88,10 @@
     {
       "tool_name": "event_correlation_tracker",
       "tool_description": "Finds root cause relationships between events"
+    },
+    {
+      "tool_name": "security_audit_tool",
+      "tool_description": "Performs system security scans (ports, logins, firewall)"
     }
   ],
 

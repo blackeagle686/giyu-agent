@@ -53,7 +53,8 @@ async def get_giyu_agent(on_startup_progress=None):
         SystemSnapshotReader, LogStreamAnalyzer, AgentHeartbeatMonitor,
         AnomalyDetector, StabilityScoreCalculator, ProcessStateTracker,
         RollbackRecommendationEngine, CoreEscalationTrigger,
-        ResourcePressureMonitor, EventCorrelationTracker, ShellCommandTool
+        ResourcePressureMonitor, EventCorrelationTracker, ShellCommandTool,
+        SystemSecurityAuditor
     )
     from phoenix.framework.agent.tools import FileReadTool, FileEditTool
     
@@ -73,6 +74,7 @@ async def get_giyu_agent(on_startup_progress=None):
     agent.register_tool(ResourcePressureMonitor())
     agent.register_tool(EventCorrelationTracker())
     agent.register_tool(ShellCommandTool())
+    agent.register_tool(SystemSecurityAuditor())
     
     # Attach brains to agent for direct access (testing/external logic)
     agent.stability_scorer = agent.loop.stability_scorer
