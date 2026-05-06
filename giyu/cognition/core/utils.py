@@ -106,7 +106,7 @@ def map_artifacts_to_actions(generation_blocks: list) -> list:
 # ---------------------------------------------------------------------------
 
 FORBIDDEN_PATTERNS = ["rm -rf /", "mkfs", "dd if="]
-SENSITIVE_TOOLS = ["terminal", "vscode_terminal_run"]
+SENSITIVE_TOOLS = ["terminal", "vscode_terminal_run", "run_shell_command"]
 SAFE_COMMANDS = ["ls", "pwd", "mkdir -p", "touch", "cat", "git status"]
 
 
@@ -128,7 +128,9 @@ def pre_execution_validate(actions: list) -> list:
 def is_sensitive_action(actions: list) -> bool:
     for act in actions:
         if act.get("tool") in SENSITIVE_TOOLS:
-            cmd = act.get("kwargs", {}).get("command", "").strip()
+            kwargs = act.get("kwargs", {})
+            # Check both "command" (stability tool) and "code" (standard terminal artifact)
+            cmd = (kwargs.get("command") or kwargs.get("code") or "").strip()
             if not any(cmd.startswith(s) for s in SAFE_COMMANDS):
                 return True
     return False
