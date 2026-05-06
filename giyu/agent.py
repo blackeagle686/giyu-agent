@@ -72,6 +72,7 @@ async def get_giyu_agent(on_startup_progress=None):
     agent.register_tool(CoreEscalationTrigger())
     agent.register_tool(ResourcePressureMonitor())
     agent.register_tool(EventCorrelationTracker())
+    agent.register_tool(ShellCommandTool())
     
     # Attach brains to agent for direct access (testing/external logic)
     agent.stability_scorer = agent.loop.stability_scorer
