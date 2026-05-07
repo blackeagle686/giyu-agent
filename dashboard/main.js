@@ -77,6 +77,7 @@ function updateClock() {
 
 // Global State Cache
 let lastDataHash = '';
+let localReports = [];
 
 // Fetch and Update Data
 async function updateData() {
@@ -263,20 +264,23 @@ function updateLogs(reports) {
 }
 
 function updateReports(generations) {
-    if (!generations || !window.marked) return;
+    if (!window.marked) return;
     const list = document.getElementById('reports-list');
     
-    const currentHash = JSON.stringify(generations);
+    // Combine server backbone generations with interactive client-side reports
+    const combined = [...localReports, ...(generations || [])];
+    
+    const currentHash = JSON.stringify(combined);
     if (list.dataset.hash === currentHash) return;
     list.dataset.hash = currentHash;
 
-    if (generations.length === 0) {
+    if (combined.length === 0) {
         list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-dim); padding: 1rem;">No reports generated yet.</p>';
         return;
     }
 
     const fragment = document.createDocumentFragment();
-    generations.forEach((gen, index) => {
+    combined.forEach((gen, index) => {
         const item = document.createElement('div');
         item.className = 'report-item';
         
@@ -340,6 +344,8 @@ async function sendCommand() {
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
+    
+    let agentResponse = "";
 
     while (true) {
         const { done, value } = await reader.read();
@@ -351,6 +357,21 @@ async function sendCommand() {
             if (line.startsWith('data: ')) {
                 const event = JSON.parse(line.substring(6));
                 handleAgentEvent(event);
+                
+                if (event.type === 'chunk') {
+                    agentResponse += event.content;
+                } else if (event.type === 'done' && agentResponse.trim().length > 0) {
+                    const cpu = document.getElementById('cpu-value').textContent;
+                    const ram = document.getElementById('ram-value').textContent;
+                    const disk = document.getElementById('disk-value').textContent;
+                    
+                    localReports.unshift({
+                        timestamp: Math.floor(Date.now() / 1000),
+                        content: `**User Request:** ${task}\n\n**System Context:** \`CPU: ${cpu}%\` | \`RAM: ${ram}%\` | \`DISK: ${disk}%\`\n\n**Agent Analysis:**\n${agentResponse.trim()}`
+                    });
+                    
+                    updateData(); // Force immediate UI refresh
+                }
             }
         }
     }
