@@ -757,7 +757,7 @@ main {
     main {
         grid-template-columns: 1fr;
     }
-    .task-stream {
+    .sidebar {
         order: 2;
     }
     .main-dashboard {
