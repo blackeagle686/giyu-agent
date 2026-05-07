@@ -1,0 +1,111 @@
+{
+  "context_id": "4f6dbbc2-59fc-4539-ba5f-da3f9d843d4d",
+  "metadata": {
+    "created_at": "2026-05-08T02:26:48.451100",
+    "updated_at": "2026-05-08T02:26:51.601863",
+    "original_prompt": "check network"
+  },
+  "tasks": [
+    {
+      "id": 1,
+      "priority": 1,
+      "title": "Verify network interface status",
+      "description": "Check active network interfaces and their operational state using system tools",
+      "status": "pending",
+      "type": "command"
+    },
+    {
+      "id": 2,
+      "priority": 2,
+      "title": "Test basic connectivity",
+      "description": "Execute ping to a reliable external endpoint (e.g., 8.8.8.8) to confirm outbound connectivity",
+      "status": "pending",
+      "type": "command"
+    },
+    {
+      "id": 3,
+      "priority": 3,
+      "title": "Assess DNS resolution capability",
+      "description": "Validate ability to resolve domain names via DNS query using curl or ping to example.com",
+      "status": "pending",
+      "type": "command"
+    },
+    {
+      "id": 4,
+      "priority": 4,
+      "title": "Analyze network stability metrics",
+      "description": "Evaluate latency, packet loss, and jitter from repeated connectivity tests",
+      "status": "pending",
+      "type": "analysis"
+    }
+  ],
+  "plans": [],
+  "generations": [],
+  "execution_state": {
+    "completed_steps": [],
+    "pending_steps": [
+      {
+        "id": 1,
+        "title": "Verify network interface status"
+      },
+      {
+        "id": 2,
+        "title": "Test basic connectivity"
+      },
+      {
+        "id": 3,
+        "title": "Assess DNS resolution capability"
+      },
+      {
+        "id": 4,
+        "title": "Analyze network stability metrics"
+      }
+    ],
+    "failed_steps": []
+  },
+  "memory": {},
+  "stability_reports": [
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778196408.4503672,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778196411.6000757,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50
+      }
+    }
+  ],
+  "anomalies": [],
+  "escalation_state": {
+    "current_level": "ignore",
+    "reason": "Stability score is 100.0",
+    "timestamp": "2026-05-08T02:26:51.601846"
+  }
+}
