@@ -315,6 +315,8 @@ main {
     flex-direction: column;
     gap: 1.5rem;
     contain: content;
+    max-height: 85vh;
+    overflow-y: auto;
 }
 
 .task-stream h2 {
@@ -625,6 +627,10 @@ main {
 
 #send-btn:hover {
     opacity: 0.8;
+}
+
+.stability-reports {
+    overflow: auto;
 }
 
 .reports-list {
