@@ -105,9 +105,15 @@ def map_artifacts_to_actions(generation_blocks: list) -> list:
 # Safety & Approval
 # ---------------------------------------------------------------------------
 
-FORBIDDEN_PATTERNS = ["rm -rf /", "mkfs", "dd if="]
+FORBIDDEN_PATTERNS = [
+    # Delete / destructive operations
+    "rm ", "rmdir ", "unlink ", "truncate ",
+    # System and boot files
+    "/boot", "/etc", "/dev", "/sys", "/proc", "mkfs", "dd ", "fdisk", "parted",
+    # Heavy processing and system state
+    "stress", "yes ", ":(){ :|:& };:", "reboot", "shutdown", "init 0", "init 6", "halt"
+]
 SENSITIVE_TOOLS = ["terminal", "vscode_terminal_run", "run_shell_command"]
-SAFE_COMMANDS = ["ls", "pwd", "mkdir -p", "touch", "cat", "git status"]
 
 
 def pre_execution_validate(actions: list) -> list:
@@ -118,7 +124,7 @@ def pre_execution_validate(actions: list) -> list:
         if path and (path.startswith("/") or ".." in path):
             errors.append(f"Safety Violation: Path '{path}' is absolute or contains '..'")
         if tool in SENSITIVE_TOOLS:
-            cmd = kwargs.get("command", "")
+            cmd = (kwargs.get("command") or kwargs.get("code") or "").strip()
             for pat in FORBIDDEN_PATTERNS:
                 if pat in cmd:
                     errors.append(f"Safety Violation: Command '{cmd}' contains forbidden pattern '{pat}'")
@@ -126,13 +132,7 @@ def pre_execution_validate(actions: list) -> list:
 
 
 def is_sensitive_action(actions: list) -> bool:
-    for act in actions:
-        if act.get("tool") in SENSITIVE_TOOLS:
-            kwargs = act.get("kwargs", {})
-            # Check both "command" (stability tool) and "code" (standard terminal artifact)
-            cmd = (kwargs.get("command") or kwargs.get("code") or "").strip()
-            if not any(cmd.startswith(s) for s in SAFE_COMMANDS):
-                return True
+    # All commands not caught by the blacklist are automatically allowed
     return False
 
 
