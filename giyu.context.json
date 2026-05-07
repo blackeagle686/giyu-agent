@@ -1,42 +1,34 @@
 {
-  "context_id": "4f6dbbc2-59fc-4539-ba5f-da3f9d843d4d",
+  "context_id": "71f8f629-89e2-4bcf-aada-2f418a8a6be8",
   "metadata": {
-    "created_at": "2026-05-08T02:26:48.451100",
-    "updated_at": "2026-05-08T02:40:15.948042",
-    "original_prompt": "check network"
+    "created_at": "2026-05-08T02:46:29.240602",
+    "updated_at": "2026-05-08T02:48:29.865188",
+    "original_prompt": "check the network"
   },
   "tasks": [
     {
       "id": 1,
       "priority": 1,
-      "title": "Verify network interface status",
-      "description": "Check active network interfaces and their operational state using system tools",
-      "status": "failed",
+      "title": "Network Connectivity Test",
+      "description": "Execute ping to default gateway to verify basic connectivity and latency.",
+      "status": "done",
       "type": "command"
     },
     {
       "id": 2,
       "priority": 2,
-      "title": "Test basic connectivity",
-      "description": "Execute ping to a reliable external endpoint (e.g., 8.8.8.8) to confirm outbound connectivity",
-      "status": "failed",
+      "title": "External Reachability Check",
+      "description": "Perform curl request to a public endpoint (e.g., http://example.com) to validate internet access.",
+      "status": "done",
       "type": "command"
     },
     {
       "id": 3,
       "priority": 3,
-      "title": "Assess DNS resolution capability",
-      "description": "Validate ability to resolve domain names via DNS query using curl or ping to example.com",
-      "status": "failed",
+      "title": "DNS Resolution Validation",
+      "description": "Use curl with DNS lookup to confirm name resolution is functioning correctly.",
+      "status": "pending",
       "type": "command"
-    },
-    {
-      "id": 4,
-      "priority": 4,
-      "title": "Analyze network stability metrics",
-      "description": "Evaluate latency, packet loss, and jitter from repeated connectivity tests",
-      "status": "failed",
-      "type": "analysis"
     }
   ],
   "plans": [
@@ -46,12 +38,11 @@
       "step_index": 0,
       "type": "analysis",
       "solution": {
-        "approach": "Determine the operating system and available system tools to inspect network interface status. Common tools include `ip`, `ifconfig`, `netstat`, or `cat /proc/net/dev`. Prioritize using CLI commands over scripting to adhere to monitoring preference.",
-        "algorithm": "Check for presence of `ip` command first; fallback to `ifconfig` if not available. Avoid generating scripts unless necessary.",
-        "complexity": "Low"
+        "approach": "Determine the default gateway IP address using system routing information, then assess whether a ping test is feasible and what metrics (latency, packet loss) are relevant for connectivity verification.",
+        "algorithm": "Use `ip route` or `route -n` to extract the default gateway, validate its presence, and confirm it's reachable via local network interface."
       },
       "dependencies": [],
-      "status": "failed"
+      "status": "done"
     },
     {
       "plan_step_id": 2,
@@ -59,14 +50,13 @@
       "step_index": 1,
       "type": "design",
       "solution": {
-        "approach": "Design a diagnostic workflow that executes the appropriate network interface query command based on detected OS/tool availability. Capture stdout directly without file redirection.",
-        "algorithm": "Use conditional logic: if `which ip` succeeds, run `ip link show`; else if `which ifconfig` succeeds, run `ifconfig -a`. Output parsing is not required—raw output suffices for validation.",
-        "complexity": "Low"
+        "approach": "Design a simple ping command that sends a small number of packets (e.g., 4) to the default gateway with appropriate options to measure round-trip time and detect packet loss without flooding the network.",
+        "algorithm": "Execute: `ping -c 4 <gateway_ip>` where `<gateway_ip>` is obtained from step 1. This ensures controlled traffic and provides latency statistics."
       },
       "dependencies": [
         1
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "plan_step_id": 3,
@@ -74,14 +64,13 @@
       "step_index": 2,
       "type": "implementation",
       "solution": {
-        "approach": "Execute the chosen network interface status command via `run_shell_command`. Use relative path awareness and avoid absolute paths or temporary files.",
-        "algorithm": "Run `ip link show` if available; otherwise execute `ifconfig -a`. Capture and return stdout directly.",
-        "complexity": "Low"
+        "approach": "Run the ping command as designed in step 2 and capture its output directly to analyze connectivity status and latency values.",
+        "algorithm": "Invoke `run_shell_command` with the constructed ping command string; do not redirect output to a file but parse stdout inline if needed."
       },
       "dependencies": [
         2
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "plan_step_id": 4,
@@ -89,72 +78,70 @@
       "step_index": 3,
       "type": "validation",
       "solution": {
-        "approach": "Verify that the command executed successfully (exit code 0) and that the output contains expected fields such as interface names, states (UP/DOWN), and MAC addresses. No further processing needed—output confirms operational status.",
-        "algorithm": "Validate exit code and ensure non-empty stdout with recognizable interface entries (e.g., lines containing 'state', 'link/ether').",
-        "complexity": "Low"
+        "approach": "Interpret the ping results: check for successful replies (no 'Destination Host Unreachable' or 'Request timed out'), compute average/min/max RTT from summary lines, and confirm less than 100% packet loss.",
+        "algorithm": "Parse the final statistics line of the ping output (e.g., 'rtt min/avg/max/mdev') and verify that avg latency is within acceptable bounds (< 500ms) and packet loss is low (< 10%)."
       },
       "dependencies": [
         3
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "plan_step_id": 5,
       "task_id": 2,
-      "step_index": 0,
+      "step_index": 1,
       "type": "analysis",
       "solution": {
-        "approach": "Analyze the task requirements to confirm the need for a basic connectivity test using ping to an external endpoint (e.g., 8.8.8.8). Determine that this is a straightforward diagnostic check and does not require complex logic or data processing.",
-        "algorithm": null,
-        "complexity": "O(1)"
+        "approach": "Analyze the task requirements to determine if a simple HTTP GET request using curl is sufficient to validate external reachability. The goal is to confirm that the system has outbound internet access by attempting to connect to a reliable public endpoint such as http://example.com.",
+        "algorithm": "Use curl with appropriate flags to send a HEAD or GET request and capture response headers without downloading full content. Set a short timeout to avoid hanging on unresponsive endpoints.",
+        "complexity": "O(1) - Constant time operation involving a single network I/O call."
       },
       "dependencies": [],
-      "status": "failed"
+      "status": "done"
     },
     {
       "plan_step_id": 6,
       "task_id": 2,
-      "step_index": 1,
+      "step_index": 2,
       "type": "design",
       "solution": {
-        "approach": "Design the execution step to use the `ping` command with a count of 4 packets sent to 8.8.8.8, capturing output directly without file redirection. Ensure no absolute paths or system directories are used.",
-        "algorithm": null,
-        "complexity": "O(1)"
+        "approach": "Design a robust curl command that checks connectivity while minimizing side effects. Use --head to fetch only headers, --max-time 5 to limit execution time, --silent to suppress progress output, and --fail to ensure non-2xx responses are treated as errors. This avoids unnecessary data transfer and provides clear success/failure indication.",
+        "algorithm": "Command: curl --head --silent --fail --max-time 5 http://example.com",
+        "complexity": "N/A"
       },
-      "dependencies": [
-        5
-      ],
-      "status": "pending"
+      "dependencies": [],
+      "status": "done"
     },
     {
       "plan_step_id": 7,
       "task_id": 2,
-      "step_index": 2,
+      "step_index": 3,
       "type": "implementation",
       "solution": {
-        "approach": "Execute the ping command using `run_shell_command` with arguments: ['ping', '-c', '4', '8.8.8.8']. This will send four ICMP echo requests and display the results in stdout.",
-        "algorithm": null,
+        "approach": "Execute the designed curl command via run_shell_command. Capture stdout and stderr directly into variables for later validation. Do not redirect output to files; instead, use command substitution or direct assignment to preserve structured handling.",
+        "algorithm": "run_shell_command(curl --head --silent --fail --max-time 5 http://example.com)",
         "complexity": "O(1)"
       },
       "dependencies": [
+        5,
         6
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "plan_step_id": 8,
       "task_id": 2,
-      "step_index": 3,
+      "step_index": 4,
       "type": "validation",
       "solution": {
-        "approach": "Validate the success of the ping by checking if the command completed successfully (exit code 0) and that at least one packet was received. If the output contains '0% packet loss' or similar, consider connectivity confirmed.",
-        "algorithm": null,
+        "approach": "Validate the outcome of the curl request by checking the exit code. A zero exit code indicates successful HTTP response (typically 2xx), confirming external reachability. Non-zero indicates failure due to network issues, DNS resolution failure, or server error. Log result accordingly.",
+        "algorithm": "if [ $? -eq 0 ]; then echo 'Success: External endpoint reachable'; else echo 'Failure: No internet access or endpoint unreachable'; fi",
         "complexity": "O(1)"
       },
       "dependencies": [
         7
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "plan_step_id": 9,
@@ -162,96 +149,55 @@
       "step_index": 0,
       "type": "analysis",
       "solution": {
-        "approach": "Begin by analyzing the system's DNS resolution capability using standard network diagnostic tools. Since the task involves validating DNS resolution for example.com, use curl with a DNS-over-TLS or plain HTTP request to test name resolution without downloading content. This avoids relying solely on ping, which may be disabled or misconfigured. The goal is to confirm that the system can resolve domain names via DNS.",
-        "algorithm": "Execute curl command targeting example.com with minimal headers to verify connectivity and DNS resolution. Capture response status and headers to determine if the domain resolves successfully.",
+        "approach": "Analyze the task requirements to understand that DNS resolution validation involves testing whether a domain name can be resolved to an IP address using curl with DNS lookup capabilities. The goal is to confirm that name resolution is functioning correctly in the current environment.",
+        "algorithm": "Identify target domains for testing (e.g., google.com, example.com), determine appropriate curl flags for DNS resolution (--resolve or --connect-to), and plan how to interpret successful vs failed resolution.",
         "complexity": "Low"
       },
       "dependencies": [],
-      "status": "failed"
+      "status": "pending"
     },
     {
       "plan_step_id": 10,
       "task_id": 3,
       "step_index": 1,
-      "type": "implementation",
+      "type": "design",
       "solution": {
-        "approach": "Run a curl command against example.com using the --connect-timeout and --max-time options to limit execution time. Include verbose output to inspect DNS lookup details. Do not redirect output to any file; capture stdout directly for analysis.",
-        "algorithm": "Use run_shell_command to execute: curl -v --connect-timeout 5 --max-time 10 https://example.com",
+        "approach": "Design a curl command that performs DNS resolution without actually making an HTTP request, using the --resolve flag to specify a custom IP for a domain, combined with -w '%{time_namelookup}' to measure and display the name resolution time and success status.",
+        "algorithm": "Use curl with --resolve to force DNS resolution of a test domain, include verbose output control via -sS to show errors but suppress normal progress, and format output to clearly indicate resolution outcome.",
         "complexity": "Low"
       },
-      "dependencies": [],
-      "status": "failed"
+      "dependencies": [
+        9
+      ],
+      "status": "pending"
     },
     {
       "plan_step_id": 11,
       "task_id": 3,
       "step_index": 2,
-      "type": "validation",
+      "type": "implementation",
       "solution": {
-        "approach": "Validate the curl command output to confirm successful DNS resolution. Check for presence of 'Connected to' message indicating successful connection to example.com, and absence of errors related to name resolution (e.g., 'Could not resolve host'). If the command succeeds, DNS resolution is functional.",
-        "algorithm": "Parse stdout from step 2 for success indicators. If 'Connected to example.com' appears in output, mark DNS resolution as valid.",
+        "approach": "Execute curl with DNS resolution flags against a reliable public domain (google.com) to validate that name-to-IP mapping works correctly. Use relative path context and avoid file redirection by capturing stdout directly.",
+        "algorithm": "Run: curl -sS --resolve google.com:443:172.217.16.142 https://google.com -w '%{time_namelookup}' --max-time 10. Capture and return the full output including timing information.",
         "complexity": "Low"
       },
       "dependencies": [
-        "plan_step_2"
+        10
       ],
-      "status": "failed"
+      "status": "pending"
     },
     {
       "plan_step_id": 12,
-      "task_id": 4,
-      "step_index": 0,
-      "type": "analysis",
-      "solution": {
-        "approach": "Identify existing network diagnostic tools available in the environment to measure latency, packet loss, and jitter. Prioritize CLI-based utilities such as ping, mtr (My Traceroute), or iperf3 for comprehensive metrics. Determine if historical data exists or if real-time testing is required.",
-        "algorithm": null,
-        "complexity": "Low"
-      },
-      "dependencies": [],
-      "status": "failed"
-    },
-    {
-      "plan_step_id": 13,
-      "task_id": 4,
-      "step_index": 1,
-      "type": "design",
-      "solution": {
-        "approach": "Design a test plan using ping with extended options (-c count, -i interval) to collect round-trip time statistics. Use mtr for continuous path analysis to capture jitter and intermittent packet loss. Define target endpoints and duration for repeated tests to simulate real-world conditions.",
-        "algorithm": "Statistical sampling over multiple intervals",
-        "complexity": "Medium"
-      },
-      "dependencies": [
-        12
-      ],
-      "status": "pending"
-    },
-    {
-      "plan_step_id": 14,
-      "task_id": 4,
-      "step_index": 2,
-      "type": "implementation",
-      "solution": {
-        "approach": "Execute ping and mtr commands in sequence across multiple iterations to gather latency, packet loss, and jitter data. Capture output directly into variables or streams without file redirection. Use shell commands to parse key metrics: average/max RTT from ping, % loss, and inter-packet delay variation from mtr logs.",
-        "algorithm": null,
-        "complexity": "Low"
-      },
-      "dependencies": [
-        13
-      ],
-      "status": "pending"
-    },
-    {
-      "plan_step_id": 15,
-      "task_id": 4,
+      "task_id": 3,
       "step_index": 3,
       "type": "validation",
       "solution": {
-        "approach": "Validate collected metrics against acceptable thresholds (e.g., <100ms latency, <1% packet loss, <30ms jitter). Compare results across test runs for consistency. Output a summary report indicating stability status and any anomalies detected during execution.",
-        "algorithm": "Threshold comparison with trend analysis",
+        "approach": "Validate that the curl command executed successfully and returned a non-zero exit code indicating successful DNS resolution (since we're not completing the full request due to --max-time). Check that the %{time_namelookup} field shows a numeric value indicating successful resolution.",
+        "algorithm": "Parse the curl output to verify it contains a valid time value (not '0' or empty), and confirm curl exited with code 0 despite early termination due to max-time. Return success if both conditions met.",
         "complexity": "Low"
       },
       "dependencies": [
-        14
+        11
       ],
       "status": "pending"
     }
@@ -265,109 +211,63 @@
           "type": "terminal",
           "path": "",
           "language": "bash",
-          "code": "command -v ip && echo 'ip command available' || echo 'ip not found, checking ifconfig...'; command -v ifconfig && echo 'ifconfig available' || echo 'ifconfig not found'"
+          "code": "ip route | grep default",
+          "edits": []
+        }
+      ],
+      "status": "success",
+      "metadata": {
+        "model": "giyu-generator"
+      }
+    },
+    {
+      "generate_block_id": 1,
+      "plan_step_id": 2,
+      "artifacts": [
+        {
+          "type": "terminal",
+          "path": "",
+          "language": "bash",
+          "code": "ping -c 4 $(ip route | grep default | awk '{print $3}')",
+          "edits": []
+        }
+      ],
+      "status": "success",
+      "metadata": {
+        "model": "giyu-generator"
+      }
+    },
+    {
+      "generate_block_id": 1,
+      "plan_step_id": 3,
+      "artifacts": [
+        {
+          "type": "terminal",
+          "path": "./",
+          "language": "bash",
+          "code": "ping -c 4 google.com"
+        }
+      ],
+      "status": "success",
+      "metadata": {
+        "model": "giyu-generator"
+      }
+    },
+    {
+      "generate_block_id": 1,
+      "plan_step_id": 4,
+      "artifacts": [
+        {
+          "type": "terminal",
+          "path": "./ping_test.sh",
+          "language": "bash",
+          "code": "ping -c 10 google.com"
         },
-        {
-          "type": "terminal",
-          "path": "",
-          "language": "bash",
-          "code": "if command -v ip &>/dev/null; then ip link show; else if command -v ifconfig &>/dev/null; then ifconfig; else cat /proc/net/dev; fi; fi"
-        }
-      ],
-      "status": "success",
-      "metadata": {
-        "model": "giyu-generator"
-      }
-    },
-    {
-      "generate_block_id": 1,
-      "plan_step_id": 1,
-      "artifacts": [
-        {
-          "type": "terminal",
-          "path": "",
-          "language": "bash",
-          "code": "which ip && ip link show || which ifconfig && ifconfig -a"
-        }
-      ],
-      "status": "success",
-      "metadata": {
-        "model": "giyu-generator"
-      }
-    },
-    {
-      "generate_block_id": 1,
-      "plan_step_id": 5,
-      "artifacts": [
-        {
-          "type": "terminal",
-          "path": ".",
-          "language": "bash",
-          "code": "ping -c 4 8.8.8.8"
-        }
-      ],
-      "status": "success",
-      "metadata": {
-        "model": "giyu-generator"
-      }
-    },
-    {
-      "generate_block_id": 1,
-      "plan_step_id": 5,
-      "artifacts": [
-        {
-          "type": "terminal",
-          "path": ".",
-          "language": "bash",
-          "code": "ping -c 4 8.8.8.8"
-        }
-      ],
-      "status": "success",
-      "metadata": {
-        "model": "giyu-generator"
-      }
-    },
-    {
-      "generate_block_id": 1,
-      "plan_step_id": 9,
-      "artifacts": [
-        {
-          "type": "terminal",
-          "path": ".",
-          "language": "bash",
-          "code": "curl -v --resolve example.com:80:$(dig +short example.com | head -n1) http://example.com"
-        }
-      ],
-      "status": "success",
-      "metadata": {
-        "model": "giyu-generator"
-      }
-    },
-    {
-      "generate_block_id": 1,
-      "plan_step_id": 11,
-      "artifacts": [
-        {
-          "type": "terminal",
-          "path": "./validate_dns.sh",
-          "language": "bash",
-          "code": "curl -I http://example.com | head -n 1"
-        }
-      ],
-      "status": "success",
-      "metadata": {
-        "model": "giyu-generator"
-      }
-    },
-    {
-      "generate_block_id": 2,
-      "plan_step_id": 11,
-      "artifacts": [
         {
           "type": "file_write",
-          "path": "./dns_validator.py",
+          "path": "./validate_ping.py",
           "language": "python",
-          "code": "import subprocess\nimport sys\n\ndef main():\n    try:\n        result = subprocess.run(\n            ['curl', '-I', 'http://example.com'],\n            capture_output=True,\n            text=True,\n            timeout=10\n        )\n        if result.returncode != 0:\n            print(\"Error: Failed to connect.\")\n            sys.exit(1)\n        \n        output = result.stdout.lower()\n        if 'connected to example.com' in output:\n            print(\"DNS resolution successful: Connected to example.com found.\")\n            sys.exit(0)\n        else:\n            print(\"DNS resolution failed: No 'Connected to example.com' message.\")\n            sys.exit(1)\n    except Exception as e:\n        print(f\"Exception occurred: {e}\")\n        sys.exit(1)\n\nif __name__ == '__main__':\n    main()"
+          "code": "#!/usr/bin/env python3\nimport re\nimport sys\n\ndef parse_ping_output(output):\n    # Extract the summary line with RTT stats\n    lines = output.strip().split('\\n')\n    for line in reversed(lines):\n        if 'rtt min/avg/max/mdev' in line:\n            parts = line.split('/')\n            avg_rtt = float(parts[1])\n            return avg_rtt\n        elif 'packets transmitted, received, loss' in line:\n            match = re.search(r'(\\d+) packets transmitted, (\\d+) received, (\\d+)% packet loss', line)\n            if match:\n                tx, rx, loss_percent = map(int, match.groups())\n                loss_ratio = loss_percent / 100.0\n                return None, loss_ratio\n    return None, None\n\ndef main():\n    result = subprocess.run(['ping', '-c', '10', 'google.com'], capture_output=True, text=True)\n    if result.returncode != 0:\n        print(\"Ping failed.\")\n        sys.exit(1)\n\n    avg_rtt, loss_ratio = parse_ping_output(result.stdout)\n\n    if avg_rtt is not None:\n        print(f\"Average RTT: {avg_rtt:.2f} ms\")\n        if avg_rtt >= 500:\n            print(\"FAIL: Average latency exceeds 500ms\")\n            sys.exit(1)\n        else:\n            print(\"PASS: Average latency within acceptable bounds\")\n\n    if loss_ratio is not None:\n        print(f\"Packet loss: {loss_ratio * 100:.2f}%\")\n        if loss_ratio >= 0.10:\n            print(\"FAIL: Packet loss >= 10%\")\n            sys.exit(1)\n        else:\n            print(\"PASS: Packet loss is low (< 10%)\")\n\nif __name__ == \"__main__\":\n    import subprocess\n    main()"
         }
       ],
       "status": "success",
@@ -377,13 +277,13 @@
     },
     {
       "generate_block_id": 1,
-      "plan_step_id": 10,
+      "plan_step_id": 6,
       "artifacts": [
         {
           "type": "terminal",
           "path": ".",
           "language": "bash",
-          "code": "curl -v --connect-timeout 5 --max-time 10 https://example.com"
+          "code": "curl --head --silent --fail --max-time 5 http://example.com"
         }
       ],
       "status": "success",
@@ -393,13 +293,13 @@
     },
     {
       "generate_block_id": 1,
-      "plan_step_id": 11,
+      "plan_step_id": 5,
       "artifacts": [
         {
           "type": "terminal",
-          "path": ".",
+          "path": "",
           "language": "bash",
-          "code": "curl -v http://example.com 2>&1 | grep -E 'Connected to|Could not resolve'"
+          "code": "curl -I --max-time 5 http://example.com"
         }
       ],
       "status": "success",
@@ -409,13 +309,45 @@
     },
     {
       "generate_block_id": 1,
-      "plan_step_id": 10,
+      "plan_step_id": 7,
       "artifacts": [
         {
           "type": "terminal",
           "path": ".",
           "language": "bash",
-          "code": "curl -v --connect-timeout 5 --max-time 10 https://example.com"
+          "code": "response=$(curl --head --silent --fail --max-time 5 http://example.com) && echo \"STDOUT: $response\" && if [ $? -ne 0 ]; then echo \"STDERR: $(curl --head --silent --fail --max-time 5 http://example.com 2>&1)\" >&2; fi"
+        }
+      ],
+      "status": "success",
+      "metadata": {
+        "model": "giyu-generator"
+      }
+    },
+    {
+      "generate_block_id": 1,
+      "plan_step_id": 8,
+      "artifacts": [
+        {
+          "type": "terminal",
+          "path": ".",
+          "language": "bash",
+          "code": "curl -s https://httpbin.org/status/200 > /dev/null && echo 'Success: External endpoint reachable' || echo 'Failure: No internet access or endpoint unreachable'"
+        }
+      ],
+      "status": "success",
+      "metadata": {
+        "model": "giyu-generator"
+      }
+    },
+    {
+      "generate_block_id": 1,
+      "plan_step_id": 8,
+      "artifacts": [
+        {
+          "type": "terminal",
+          "path": ".",
+          "language": "bash",
+          "code": "curl -s http://example.com && if [ $? -eq 0 ]; then echo 'Success: External endpoint reachable'; else echo 'Failure: No internet access or endpoint unreachable'; fi"
         }
       ],
       "status": "success",
@@ -429,9 +361,31 @@
       "artifacts": [
         {
           "type": "terminal",
-          "path": "./network_test.sh",
+          "path": ".",
           "language": "bash",
-          "code": "curl -sI --resolve example.com:80:192.0.2.1 http://example.com"
+          "code": "curl --resolve google.com:80:142.250.191.78 http://google.com -I --max-time 10"
+        },
+        {
+          "type": "terminal",
+          "path": ".",
+          "language": "bash",
+          "code": "curl --resolve example.com:443:93.184.216.34 https://example.com -I --max-time 10"
+        }
+      ],
+      "status": "success",
+      "metadata": {
+        "model": "giyu-generator"
+      }
+    },
+    {
+      "generate_block_id": 1,
+      "plan_step_id": 9,
+      "artifacts": [
+        {
+          "type": "terminal",
+          "path": ".",
+          "language": "bash",
+          "code": "curl --resolve google.com:80:142.250.191.78 -I http://google.com/ && echo 'DNS resolution test completed'"
         }
       ],
       "status": "success",
@@ -445,71 +399,9 @@
       "artifacts": [
         {
           "type": "terminal",
-          "path": "./dns_resolve_test.sh",
-          "language": "bash",
-          "code": "curl -v http://example.com 2>&1 | head -n 20"
-        }
-      ],
-      "status": "success",
-      "metadata": {
-        "model": "giyu-generator"
-      }
-    },
-    {
-      "generate_block_id": 1,
-      "plan_step_id": 12,
-      "artifacts": [
-        {
-          "type": "terminal",
           "path": ".",
           "language": "bash",
-          "code": "which ping mtr iperf3",
-          "edits": []
-        },
-        {
-          "type": "terminal",
-          "path": ".",
-          "language": "bash",
-          "code": "ping -c 5 google.com",
-          "edits": []
-        },
-        {
-          "type": "terminal",
-          "path": ".",
-          "language": "bash",
-          "code": "mtr --report --report-cycles=5 google.com",
-          "edits": []
-        }
-      ],
-      "status": "success",
-      "metadata": {
-        "model": "giyu-generator"
-      }
-    },
-    {
-      "generate_block_id": 1,
-      "plan_step_id": 12,
-      "artifacts": [
-        {
-          "type": "terminal",
-          "path": "./",
-          "language": "bash",
-          "code": "ping -c 5 google.com",
-          "edits": []
-        },
-        {
-          "type": "terminal",
-          "path": "./",
-          "language": "bash",
-          "code": "mtr --report --report-cycles=5 google.com",
-          "edits": []
-        },
-        {
-          "type": "terminal",
-          "path": "./",
-          "language": "bash",
-          "code": "iperf3 -c iperf.he.net -t 10",
-          "edits": []
+          "code": "curl --resolve example.com:443:93.184.216.34 -I https://example.com/"
         }
       ],
       "status": "success",
@@ -519,33 +411,30 @@
     }
   ],
   "execution_state": {
-    "completed_steps": [],
-    "pending_steps": [],
-    "failed_steps": [
+    "completed_steps": [
       {
         "id": 1,
-        "title": "Verify network interface status"
+        "title": "Network Connectivity Test"
       },
       {
         "id": 2,
-        "title": "Test basic connectivity"
-      },
+        "title": "External Reachability Check"
+      }
+    ],
+    "pending_steps": [
       {
         "id": 3,
-        "title": "Assess DNS resolution capability"
-      },
-      {
-        "id": 4,
-        "title": "Analyze network stability metrics"
+        "title": "DNS Resolution Validation"
       }
-    ]
+    ],
+    "failed_steps": []
   },
   "memory": {},
   "stability_reports": [
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196408.4503672,
+      "timestamp": 1778197589.2400806,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -563,7 +452,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196411.6000757,
+      "timestamp": 1778197594.0802293,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -581,7 +470,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196417.6821082,
+      "timestamp": 1778197600.140551,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -599,7 +488,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196423.7534509,
+      "timestamp": 1778197606.200225,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -617,7 +506,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196429.8208945,
+      "timestamp": 1778197612.2591434,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -635,7 +524,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196435.8959348,
+      "timestamp": 1778197624.7838151,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -653,7 +542,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196441.978393,
+      "timestamp": 1778197630.844964,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -671,7 +560,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196448.1886344,
+      "timestamp": 1778197636.9033806,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -689,7 +578,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196454.4629495,
+      "timestamp": 1778197642.9623892,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -707,7 +596,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196460.5396483,
+      "timestamp": 1778197649.0209165,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -725,7 +614,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196466.6320367,
+      "timestamp": 1778197655.0935516,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -743,7 +632,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196472.705942,
+      "timestamp": 1778197661.1989036,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -761,7 +650,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196478.7809389,
+      "timestamp": 1778197667.4516678,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -779,7 +668,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196484.860928,
+      "timestamp": 1778197673.5152764,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -797,7 +686,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196490.927256,
+      "timestamp": 1778197680.2566507,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -815,7 +704,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196497.0018992,
+      "timestamp": 1778197703.7850127,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -833,2023 +722,7 @@
     {
       "score": 100.0,
       "state": "stable",
-      "timestamp": 1778196503.0837348,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196509.1521587,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196515.2282145,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196521.3187478,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196527.3825815,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196533.4658082,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196539.528528,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196545.602683,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196551.7360568,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196557.7982779,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196563.872691,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196569.958702,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196576.0225668,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196582.1011045,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196588.1697288,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196594.2593434,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196600.326588,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196606.4389706,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196612.518449,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196618.5926569,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196624.6708047,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196630.7471445,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196636.8271587,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196642.9045615,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196648.9706073,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196655.0423038,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196661.1175346,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196667.1918745,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196673.2866173,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196679.3608348,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196685.4285774,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196691.5031831,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196697.57509,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196703.6857376,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196709.797097,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196715.8899775,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196721.9583683,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196728.032644,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196734.104037,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196740.1820247,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196746.2582028,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196752.335915,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196758.4049315,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196764.482993,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196770.5572877,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196776.6354558,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196782.7200215,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196788.7889404,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196794.8573468,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196800.932981,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196807.1234918,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196813.2429776,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196819.311018,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196825.4003694,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196831.500436,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196837.58083,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196843.659154,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196849.7303555,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196855.8127012,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196861.8811724,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196867.952235,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196874.0355523,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196880.10387,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196886.1758196,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196892.2749977,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196898.3451748,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196904.4126527,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196910.4954476,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196916.5713987,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196922.6418078,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196928.7120569,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196934.785058,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196940.8856733,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196946.9752562,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196953.0870423,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196959.1736543,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196965.2525995,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778196971.3658624,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197008.4852815,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197014.789501,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197021.1387386,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197027.2406201,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197033.3164618,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197039.3902762,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197045.4721625,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197051.5511672,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197057.6224372,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197063.6962862,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197069.7812266,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197075.850895,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197081.921888,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197087.990365,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197094.0662878,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197100.1363838,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197106.2065964,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197112.2764041,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197118.354163,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197124.4279351,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197130.5104847,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197136.8236418,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197142.9078686,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197148.980677,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197155.050851,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197161.1281183,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197167.2077608,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197173.2908227,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197179.3706973,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197185.440768,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197191.5195146,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197197.5892727,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197203.659427,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197209.7376118,
-      "metrics_evaluated": [
-        "cpu",
-        "ram",
-        "disk"
-      ],
-      "escalation_level": "ignore",
-      "necessity": "low",
-      "decision_reason": "Stability score is 100.0",
-      "metrics": {
-        "cpu_usage": 50,
-        "ram_usage": 50,
-        "disk_usage": 50
-      }
-    },
-    {
-      "score": 100.0,
-      "state": "stable",
-      "timestamp": 1778197215.9364007,
+      "timestamp": 1778197709.8513787,
       "metrics_evaluated": [
         "cpu",
         "ram",
@@ -2869,6 +742,6 @@
   "escalation_state": {
     "current_level": "ignore",
     "reason": "Stability score is 100.0",
-    "timestamp": "2026-05-08T02:40:15.948021"
+    "timestamp": "2026-05-08T02:48:29.854252"
   }
 }
