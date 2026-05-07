@@ -58,12 +58,23 @@
 
 
         <main>
-            <aside class="task-stream">
-                <h2>Task Stream</h2>
-                <div id="task-list" class="stepper">
-                    <!-- Tasks will be injected here -->
+            <div class="sidebar d-flex flex-column gap-3">
+                <aside class="task-stream">
+                    <h2>Task Stream</h2>
+                    <div id="task-list" class="stepper">
+                        <!-- Tasks will be injected here -->
+                    </div>
+                </aside>
+
+                <div class="agent-heartbeat card">
+                    <div class="card-header">
+                        <h3>Agent Heartbeat</h3>
+                    </div>
+                    <div id="heartbeat-grid" class="heartbeat-grid">
+                        <!-- Agent status will be injected here -->
+                    </div>
                 </div>
-            </aside>
+            </div>
 
             <section class="main-dashboard">
                 <div class="stability-score-container">
@@ -122,14 +133,6 @@
                     </div>
                 </div>
 
-                <div class="agent-heartbeat card">
-                    <div class="card-header">
-                        <h3>Agent Heartbeat</h3>
-                    </div>
-                    <div id="heartbeat-grid" class="heartbeat-grid">
-                        <!-- Agent status will be injected here -->
-                    </div>
-                </div>
 
                 <div class="stability-reports card p-4">
                     <div class="card-header">
