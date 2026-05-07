@@ -96,8 +96,7 @@ def map_artifacts_to_actions(generation_blocks: list) -> list:
                     continue
                 actions.append({"tool": "file_update_multi", "kwargs": {"file_path": art.get("path", ""), "edits": chunks}})
             elif art_type == "terminal":
-                tool = "vscode_terminal_run" if is_vscode else "terminal"
-                actions.append({"tool": tool, "kwargs": {"command": art.get("code", "")}})
+                actions.append({"tool": "run_shell_command", "kwargs": {"command": art.get("code", "")}})
     return actions
 
 
