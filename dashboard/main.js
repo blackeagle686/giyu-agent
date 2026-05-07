@@ -400,6 +400,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // Interactive Net Background
 function initNet() {
     const canvas = document.getElementById('bg-net');
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let particles = [];
     let mouse = { x: null, y: null };
