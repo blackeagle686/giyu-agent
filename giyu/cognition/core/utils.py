@@ -207,6 +207,11 @@ async def stability_check(ctx, memory, session_id) -> Dict[str, Any]:
     snapshot_result = await ctx["actor"].execute({"actions": [{"tool": "system_snapshot_reader", "kwargs": {}}]})
     import ast
     try:
+        raw_metrics = ast.literal_eval(snapshot_result[0].output)
+    except:
+        raw_metrics = {}
+        
+    try:
         # 2. Get network latency (quick ping)
         try:
             import subprocess
