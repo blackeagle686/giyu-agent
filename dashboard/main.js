@@ -134,16 +134,6 @@ function updateStabilityUI(report, escalation) {
 }
 
 function updateMetrics(report) {
-    const metrics = report.metrics || {
-        cpu_usage: Math.random() * 20 + 20, // Fallback random if server doesn't provide
-        ram_usage: Math.random() * 10 + 40,
-        disk_usage: 15
-    };
-    
-    // Use metrics from report if available (from system_snapshot_reader)
-    // The StabilityScorer might return metrics in the report.
-    // In our backend implementation, we might need to ensure they are there.
-    
     const cpu = report.metrics?.cpu_usage || 0;
     const ram = report.metrics?.ram_usage || 0;
     const disk = report.metrics?.disk_usage || 0;
@@ -154,10 +144,30 @@ function updateMetrics(report) {
     document.getElementById('disk-value').textContent = Math.round(disk);
     document.getElementById('net-value').textContent = Math.round(net);
 
+    updateMetricBadge('cpu-badge', cpu);
+    updateMetricBadge('ram-badge', ram);
+    updateMetricBadge('disk-badge', disk);
+    updateMetricBadge('net-badge', net, true);
+
     updateChart(charts.cpu, cpu);
     updateChart(charts.ram, ram);
     updateChart(charts.disk, disk);
     updateChart(charts.net, net);
+}
+
+function updateMetricBadge(id, value, isLatency) {
+    const badge = document.getElementById(id);
+    if (!badge) return;
+    badge.className = 'metric-badge';
+    if (isLatency) {
+        if (value > 200) { badge.textContent = 'Critical'; badge.classList.add('danger'); }
+        else if (value > 100) { badge.textContent = 'High'; badge.classList.add('warn'); }
+        else { badge.textContent = 'Normal'; }
+    } else {
+        if (value > 90) { badge.textContent = 'Critical'; badge.classList.add('danger'); }
+        else if (value > 70) { badge.textContent = 'Warning'; badge.classList.add('warn'); }
+        else { badge.textContent = 'Normal'; }
+    }
 }
 
 function updateChart(chartObj, newValue) {
@@ -275,7 +285,7 @@ function updateReports(generations) {
     list.dataset.hash = currentHash;
 
     if (combined.length === 0) {
-        list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-dim); padding: 1rem;">No reports generated yet.</p>';
+        list.innerHTML = '<div class="empty-state"><i class="bi bi-inbox"></i><p>No reports generated yet.</p><span>Send a command to get started</span></div>';
         return;
     }
 
