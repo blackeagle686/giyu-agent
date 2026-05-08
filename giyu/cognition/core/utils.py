@@ -444,6 +444,13 @@ async def stream_task_steps(ctx, task, task_id, memory, session_id, result: Step
             action_result, actions, executed = await validate_and_execute(ctx, actions)
             if executed:
                 result.action_count += len(actions)
+                def _fmt(res):
+                    if isinstance(res, list):
+                        return "\n".join(str(getattr(r, "output", r)) for r in res)
+                    return str(res)
+                fmt_out = _fmt(action_result).strip()
+                if fmt_out:
+                    yield {"type": "chunk", "role": "actor", "content": f"\n\n**Command Execution Result:**\n```text\n{fmt_out}\n```\n\n"}
             else:
                 label = "⛔" if is_sensitive_action(actions) else "⚠"
                 yield {"type": "chunk", "role": "system", "content": f"    ↳ {label} {action_result}\n"}
