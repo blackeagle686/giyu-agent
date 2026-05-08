@@ -2,7 +2,7 @@
   "context_id": "8996767d-ea4a-48be-96a8-75310f3103ec",
   "metadata": {
     "created_at": "2026-05-08T03:19:46.175595",
-    "updated_at": "2026-05-08T03:28:22.732799",
+    "updated_at": "2026-05-08T03:28:34.879260",
     "original_prompt": "Analyze my current system stability. What are the CPU and RAM levels?"
   },
   "tasks": [
@@ -2150,12 +2150,52 @@
         "net_latency": 49.5,
         "process_count": 0
       }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778200108.7952247,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50,
+        "net_latency": 49.1,
+        "process_count": 0
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778200114.8706403,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50,
+        "net_latency": 56.9,
+        "process_count": 0
+      }
     }
   ],
   "anomalies": [],
   "escalation_state": {
     "current_level": "ignore",
     "reason": "Stability score is 100.0",
-    "timestamp": "2026-05-08T03:28:22.732782"
+    "timestamp": "2026-05-08T03:28:34.879240"
   }
 }
