@@ -81,20 +81,20 @@ def map_artifacts_to_actions(generation_blocks: list) -> list:
     for block in generation_blocks:
         for art in block.get("artifacts", []):
             art_type = art.get("type")
-            if art_type == "file_write":
-                tool = "vscode_create_file" if is_vscode else "file_write"
-                key = "path" if is_vscode else "file_path"
-                actions.append({"tool": tool, "kwargs": {key: art.get("path", ""), "content": art.get("code", "")}})
+            
+            if art_type in ["tool_call", "tool"]:
+                tool_name = art.get("tool") or art.get("name")
+                tool_kwargs = art.get("kwargs") or art.get("arguments") or {}
+                if tool_name:
+                    actions.append({"tool": tool_name, "kwargs": tool_kwargs})
+                    
+            elif art_type == "file_write":
+                # Stability agent is strictly read-only and monitoring
+                actions.append({"tool": "run_shell_command", "kwargs": {"command": "echo 'SAFETY ERROR: file_write tool is blocked. Use approved monitoring tools or run_shell_command instead.'"}})
+                
             elif art_type == "file_update_multi":
-                chunks = art.get("edits")
-                if not chunks and "code" in art:
-                    try:
-                        chunks = json.loads(art["code"]) if isinstance(art["code"], str) else art["code"]
-                    except Exception:
-                        chunks = []
-                if not chunks:
-                    continue
-                actions.append({"tool": "file_update_multi", "kwargs": {"file_path": art.get("path", ""), "edits": chunks}})
+                actions.append({"tool": "run_shell_command", "kwargs": {"command": "echo 'SAFETY ERROR: file_update_multi tool is blocked. You are a read-only monitoring agent.'"}})
+                
             elif art_type == "terminal":
                 actions.append({"tool": "run_shell_command", "kwargs": {"command": art.get("code", "")}})
     return actions
