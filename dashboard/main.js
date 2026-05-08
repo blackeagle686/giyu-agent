@@ -403,7 +403,7 @@ function handleAgentEvent(event) {
 }
 
 // Main Initialization
-window.addEventListener('DOMContentLoaded', () => {
+function initDashboard() {
     initCharts();
     initNet(); // Start the background net
     setInterval(updateClock, 1000);
@@ -416,7 +416,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
     updateClock();
     updateData();
-});
+}
+
+// Ensure initialization runs regardless of script timing
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDashboard);
+} else {
+    initDashboard();
+}
 
 // Interactive Net Background
 function initNet() {
