@@ -395,8 +395,10 @@ function handleAgentEvent(event) {
     if (event.type === 'status') {
         line.innerHTML = `<span class="info">STATUS: ${event.content}</span>`;
     } else if (event.type === 'chunk') {
-        // Just log the text chunk to the terminal
-        line.innerHTML = `<span>${event.content}</span>`;
+        // Just log the text chunk to the terminal, truncate if too long
+        let text = event.content;
+        if (text.length > 200) text = text.substring(0, 200) + '... [truncated]';
+        line.innerHTML = `<span>${text.replace(/\n/g, '<br>')}</span>`;
     } else if (event.type === 'error') {
         line.innerHTML = `<span class="error">ERROR: ${event.content}</span>`;
     } else if (event.type === 'done') {
