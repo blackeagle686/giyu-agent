@@ -2,7 +2,7 @@
   "context_id": "2ca44a32-fa39-4995-93c0-76d8303085b3",
   "metadata": {
     "created_at": "2026-05-08T15:36:08.545188",
-    "updated_at": "2026-05-08T15:38:24.628478",
+    "updated_at": "2026-05-08T15:38:41.366113",
     "original_prompt": "check the newtork is stable or not"
   },
   "tasks": [
@@ -219,6 +219,23 @@
           "path": "./ping_parser.py",
           "language": "python",
           "code": "#!/usr/bin/env python3\nimport re\nimport sys\nfrom typing import List, Dict, Optional\n\ndef parse_ping_output(output: str) -> Dict:\n    \"\"\"Parse standard ping output to extract packet loss and RTT stats.\"\"\"\n    lines = output.strip().split('\\n')\n    packet_loss = None\n    min_rtt = max_rtt = avg_rtt = None\n    rtt_values = []\n\n    for line in lines:\n        # Packet loss (supports Linux/Windows formats)\n        if 'packet loss' in line.lower() or '% packets transmitted' in line:\n            match = re.search(r'(\\d+(?:\\.\\d+)?)%.*?received', line, re.IGNORECASE)\n            if match:\n                received_percent = float(match.group(1))\n                packet_loss = 100 - received_percent\n\n        # Min/Avg/Max RTT (Linux-style)\n        if 'min/avg/max' in line:\n            match = re.search(r'min/avg/max[^\\d]*(\\d+\\.?\\d*)[^\\d]+(\\d+\\.?\\d*)[^\\d]+(\\d+\\.?\\d*)', line)\n            if match:\n                min_rtt = float(match.group(1))\n                avg_rtt = float(match.group(2))\n                max_rtt = float(match.group(3))\n\n        # Individual RTT values\n        rtt_match = re.search(r'(\\d+\\.?\\d*)\\s*(ms|time)', line)\n        if rtt_match:\n            rtt_values.append(float(rtt_match.group(1)))\n\n    # Compute average from individual samples if not provided\n    if not avg_rtt and rtt_values:\n        avg_rtt = sum(rtt_values) / len(rtt_values)\n\n    return {\n        'packet_loss': packet_loss,\n        'min_rtt': min_rtt,\n        'avg_rtt': avg_rtt,\n        'max_rtt': max_rtt,\n        'rtt_samples': rtt_values\n    }\n\ndef detect_anomalies(stats: Dict) -> List[str]:\n    \"\"\"Detect anomalies using IQR method on RTT samples.\"\"\"\n    anomalies = []\n    samples = stats.get('rtt_samples', [])\n    if len(samples) < 4:\n        return anomalies\n\n    sorted_samples = sorted(samples)\n    n = len(sorted_samples)\n    q1_idx = n // 4\n    q3_idx = 3 * n // 4\n    q1 = sorted_samples[q1_idx]\n    q3 = sorted_samples[q3_idx]\n    iqr = q3 - q1\n\n    lower_bound = q1 - 1.5 * iqr\n    upper_bound = q3 + 1.5 * iqr\n\n    outliers = [x for x in samples if x < lower_bound or x > upper_bound]\n    if outliers:\n        anomalies.append(f\"Detected {len(outliers)} RTT outliers: {outliers}\")\n\n    if stats['avg_rtt'] and stats['avg_rtt'] > 200:\n        anomalies.append(\"High average latency detected (>200ms)\")\n\n    if stats['packet_loss'] and stats['packet_loss'] > 0:\n        anomalies.append(f\"Packet loss detected: {stats['packet_loss']:.1f}%\")\n\n    return anomalies\n\nif __name__ == '__main__':\n    if len(sys.argv) != 2:\n        print(\"Usage: ./ping_parser.py <ping_output_file>\")\n        sys.exit(1)\n\n    with open(sys.argv[1], 'r') as f:\n        content = f.read()\n\n    stats = parse_ping_output(content)\n    print(\"Parsed Statistics:\")\n    print(f\"  Packet Loss: {stats['packet_loss']}%\" if stats['packet_loss'] else \"  Packet Loss: N/A\")\n    print(f\"  Min RTT: {stats['min_rtt']} ms\" if stats['min_rtt'] else \"  Min RTT: N/A\")\n    print(f\"  Avg RTT: {stats['avg_rtt']} ms\" if stats['avg_rtt'] else \"  Avg RTT: N/A\")\n    print(f\"  Max RTT: {stats['max_rtt']} ms\" if stats['max_rtt'] else \"  Max RTT: N/A\")\n\n    anomalies = detect_anomalies(stats)\n    if anomalies:\n        print(\"\\nAnomalies Detected:\")\n        for anomaly in anomalies:\n            print(f\"  - {anomaly}\")\n    else:\n        print(\"\\nNo anomalies detected.\")"
+        }
+      ],
+      "status": "success",
+      "metadata": {
+        "model": "giyu-generator"
+      }
+    },
+    {
+      "generate_block_id": 1,
+      "plan_step_id": 5,
+      "artifacts": [
+        {
+          "type": "file_write",
+          "path": "ping_parser.py",
+          "language": "python",
+          "code": "import re\nimport sys\nfrom typing import Dict, List, Optional\n\ndef parse_ping_output(raw_output: str, rtt_anomaly_threshold: float = 500.0) -> Dict:\n    \"\"\"\n    Parses raw ping output line-by-line and extracts key metrics.\n    Returns a dictionary with parsed data and anomalies.\n    \"\"\"\n    lines = raw_output.strip().split('\\n')\n    \n    # Initialize metrics\n    sent = received = dropped = min_rtt = max_rtt = total_rtt = 0\n    rtt_samples: List[float] = []\n    anomalies: List[str] = []\n    \n    # Regex patterns\n    summary_pattern = re.compile(r'(\\d+)\\s+packets transmitted,\\s+(\\d+)\\s+received,\\s+(\\d+)% packet loss')\n    rtt_stats_pattern = re.compile(r'min/avg/max.*?= ([\\d.]+)/([\\d.]+)/([\\d.]+)/([\\d.]+) ms')\n    rtt_line_pattern = re.compile(r'\\d+ bytes from .*?: icmp_seq=(\\d+) time=([\\d.]+) ms')\n    \n    found_summary = False\n    \n    for line in lines:\n        line = line.strip()\n        \n        # Match summary line (e.g., \"64 packets transmitted, 60 received, 6% packet loss\")\n        summary_match = summary_pattern.search(line)\n        if summary_match:\n            sent = int(summary_match.group(1))\n            received = int(summary_match.group(2))\n            packet_loss_percent = float(summary_match.group(3))\n            found_summary = True\n            continue\n        \n        # Match RTT statistics line (e.g., \"min/avg/max/mdev = 10.234/20.567/30.890/5.123 ms\")\n        rtt_stats_match = rtt_stats_pattern.search(line)\n        if rtt_stats_match:\n            min_rtt = float(rtt_stats_match.group(1))\n            avg_rtt = float(rtt_stats_match.group(2))\n            max_rtt = float(rtt_stats_match.group(3))\n            mdev = float(rtt_stats_match.group(4))  # Not used here but captured\n            continue\n        \n        # Match individual RTT lines (e.g., \"64 bytes from ...: icmp_seq=1 time=15.234 ms\")\n        rtt_match = rtt_line_pattern.search(line)\n        if rtt_match:\n            seq = int(rtt_match.group(1))\n            rtt = float(rtt_match.group(2))\n            rtt_samples.append(rtt)\n            \n            # Check for anomaly\n            if rtt > rtt_anomaly_threshold:\n                anomalies.append(f\"Anomalous RTT detected: seq={seq}, rtt={rtt}ms\")\n    \n    # If no stats line, compute from samples\n    if not found_summary or not rtt_samples:\n        raise ValueError(\"No valid ping summary or RTT data found in output.\")\n    \n    # Calculate derived metrics\n    dropped = sent - received\n    computed_packet_loss = ((sent - received) / sent) * 100 if sent > 0 else 0.0\n    \n    avg_rtt_computed = sum(rtt_samples) / len(rtt_samples) if rtt_samples else None\n    min_rtt_computed = min(rtt_samples) if rtt_samples else None\n    max_rtt_computed = max(rtt_samples) if rtt_samples else None\n    \n    return {\n        \"packets\": {\n            \"sent\": sent,\n            \"received\": received,\n            \"dropped\": dropped,\n            \"packet_loss_percent\": round(computed_packet_loss, 2)\n        },\n        \"rtt_statistics\": {\n            \"min_ms\": min_rtt_computed or min_rtt,\n            \"avg_ms\": avg_rtt_computed or avg_rtt,\n            \"max_ms\": max_rtt_computed or max_rtt\n        },\n        \"raw_rtt_samples\": rtt_samples,\n        \"anomalies\": anomalies\n    }\n\nif __name__ == \"__main__\":\n    # Example usage\n    sample_output = \"\"\"\n64 bytes from 8.8.8.8: icmp_seq=1 time=12.345 ms\n64 bytes from 8.8.8.8: icmp_seq=2 time=11.234 ms\n64 bytes from 8.8.8.8: icmp_seq=3 time=600.000 ms  # Anomalous\n64 bytes from 8.8.8.8: icmp_seq=4 time=13.456 ms\n\n--- 8.8.8.8 ping statistics ---\n4 packets transmitted, 4 received, 0% packet loss\nrtt min/avg/max/mdev = 12.345/158.261/600.000/245.123 ms\n\"\"\"\n    try:\n        result = parse_ping_output(sample_output, rtt_anomaly_threshold=500.0)\n        print(\"Parsed Ping Metrics:\", result)\n    except Exception as e:\n        print(f\"Error parsing ping output: {e}\", file=sys.stderr)",
+          "edits": []
         }
       ],
       "status": "success",
@@ -663,12 +680,72 @@
         "net_latency": 50.4,
         "process_count": 0
       }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778243909.1704779,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50,
+        "net_latency": 104.0,
+        "process_count": 0
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778243915.232473,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50,
+        "net_latency": 49.2,
+        "process_count": 0
+      }
+    },
+    {
+      "score": 100.0,
+      "state": "stable",
+      "timestamp": 1778243921.2965643,
+      "metrics_evaluated": [
+        "cpu",
+        "ram",
+        "disk"
+      ],
+      "escalation_level": "ignore",
+      "necessity": "low",
+      "decision_reason": "Stability score is 100.0",
+      "metrics": {
+        "cpu_usage": 50,
+        "ram_usage": 50,
+        "disk_usage": 50,
+        "net_latency": 49.4,
+        "process_count": 0
+      }
     }
   ],
   "anomalies": [],
   "escalation_state": {
     "current_level": "ignore",
     "reason": "Stability score is 100.0",
-    "timestamp": "2026-05-08T15:38:23.057643"
+    "timestamp": "2026-05-08T15:38:41.366095"
   }
 }
