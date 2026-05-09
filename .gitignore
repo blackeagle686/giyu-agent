@@ -7,4 +7,4 @@ repo.git/
 chroma_db/
 *.log
 giyu.trace.jsonl
-giyu.context.json
+# giyu.context.json
