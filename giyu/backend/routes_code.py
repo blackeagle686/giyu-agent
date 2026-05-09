@@ -1,10 +1,11 @@
 """
 Giyu Backend — Code completion & code-action endpoints.
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from .state import log
 from .schemas import CompletionRequest, CodeActionRequest
+from .auth import require_agent_token
 
 router = APIRouter()
 
@@ -24,7 +25,7 @@ async def _get_completion_llm():
 
 
 @router.post("/completion")
-async def code_completion(req: CompletionRequest):
+async def code_completion(req: CompletionRequest, _auth=Depends(require_agent_token)):
     """Generate inline code completions using Phoenix OpenAILLM."""
     llm = await _get_completion_llm()
     if not llm:
@@ -58,7 +59,7 @@ Context after cursor:
 
 
 @router.post("/code_action")
-async def code_action(req: CodeActionRequest):
+async def code_action(req: CodeActionRequest, _auth=Depends(require_agent_token)):
     """Process context menu AI code actions."""
     llm = await _get_completion_llm()
     if not llm:

@@ -1,0 +1,126 @@
+<div class="col-lg-8 col-xl-9 dashboard-main">
+    <section class="main-dashboard d-flex flex-column gap-3">
+        <div class="row g-3 dashboard-bottom-row">
+            <div class="col-xl-4">
+                <article class="card score-card h-100 d-flex flex-column justify-content-center">
+                    <div class="card-header-enhanced justify-content-center">
+                        <div class="header-icon-badge"><i class="bi bi-shield-check"></i></div>
+                        <h2 class="mb-0">Stability Score</h2>
+                    </div>
+                    <div class="card-divider"></div>
+                    <div class="score-display mx-auto my-3">
+                        <canvas id="scoreChart"></canvas>
+                        <div class="score-value">
+                            <span id="stability-score">--</span>
+                            <small>SYSTEM HEALTH</small>
+                        </div>
+                    </div>
+                    <div class="score-meta text-center mt-auto">
+                        <span id="stability-state">STABLE</span>
+                        <div class="anomaly-count"><i class="bi bi-exclamation-triangle me-1"></i>Anomalies: <span id="anomaly-count">0</span></div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-xl-8">
+                <div class="row g-3 h-100">
+                    <div class="col-sm-6">
+                        <article class="card metric-card h-100 d-flex flex-column accent-cyan">
+                            <div class="metric-header">
+                                <h3><i class="bi bi-cpu me-2"></i>CPU Usage</h3>
+                                <span class="metric-badge" id="cpu-badge">Normal</span>
+                            </div>
+                            <div class="metric-value"><span id="cpu-value">--</span><small>%</small></div>
+                            <div class="chart-container mt-auto"><canvas id="cpuChart"></canvas></div>
+                        </article>
+                    </div>
+                    <div class="col-sm-6">
+                        <article class="card metric-card h-100 d-flex flex-column accent-blue">
+                            <div class="metric-header">
+                                <h3><i class="bi bi-memory me-2"></i>Memory</h3>
+                                <span class="metric-badge" id="ram-badge">Normal</span>
+                            </div>
+                            <div class="metric-value"><span id="ram-value">--</span><small>%</small></div>
+                            <div class="chart-container mt-auto"><canvas id="ramChart"></canvas></div>
+                        </article>
+                    </div>
+                    <div class="col-sm-6">
+                        <article class="card metric-card h-100 d-flex flex-column accent-purple">
+                            <div class="metric-header">
+                                <h3><i class="bi bi-hdd-network me-2"></i>Disk</h3>
+                                <span class="metric-badge" id="disk-badge">Normal</span>
+                            </div>
+                            <div class="metric-value"><span id="disk-value">--</span><small>%</small></div>
+                            <div class="chart-container mt-auto"><canvas id="diskChart"></canvas></div>
+                        </article>
+                    </div>
+                    <div class="col-sm-6">
+                        <article class="card metric-card h-100 d-flex flex-column accent-teal">
+                            <div class="metric-header">
+                                <h3><i class="bi bi-wifi me-2"></i>Latency</h3>
+                                <span class="metric-badge" id="net-badge">Normal</span>
+                            </div>
+                            <div class="metric-value"><span id="net-value">--</span><small>ms</small></div>
+                            <div class="chart-container mt-auto"><canvas id="netChart"></canvas></div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-xl-7 d-flex flex-column gap-3">
+                <section class="stability-reports card p-4 d-flex flex-column">
+                    <div class="card-header-enhanced">
+                        <div class="header-icon-badge"><i class="bi bi-journal-richtext"></i></div>
+                        <div>
+                            <h3 class="mb-0">Generated Report</h3>
+                            <span class="header-subtitle">Specific response to your latest ask</span>
+                        </div>
+                    </div>
+                    <div class="card-divider"></div>
+                    <article class="report-item report-template" id="report-template-preview">
+                        <div class="report-header">
+                            <span><i class="bi bi-file-earmark-medical"></i> RESPONSE TEMPLATE</span>
+                            <span id="report-template-time">Live</span>
+                        </div>
+                        <div class="report-content">
+                            <h3>Execution Summary</h3>
+                            <ul>
+                                <li>User intent and requested action scope</li>
+                                <li>Detected system state snapshot and key risk factors</li>
+                                <li>Recommended next actions with safety level</li>
+                            </ul>
+                            <h3>Action Log</h3>
+                            <p>New reports from Giyu are streamed below in the feed.</p>
+                        </div>
+                    </article>
+                    <div id="reports-list" class="reports-list flex-grow-1">
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <p>No reports generated yet.</p>
+                            <span>Send a command to generate your first analysis report.</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-xl-5 d-flex flex-column">
+                <section class="stability-log card h-100 d-flex flex-column">
+                    <div class="card-header-enhanced">
+                        <div class="header-icon-badge"><i class="bi bi-terminal-dash"></i></div>
+                        <div>
+                            <h3 class="mb-0">Log Screen</h3>
+                            <span class="header-subtitle">Real-time execution and stability events</span>
+                        </div>
+                        <div class="terminal-status ms-auto">
+                            <span class="pulse-dot"></span> LIVE
+                        </div>
+                    </div>
+                    <div class="card-divider"></div>
+                    <div id="log-terminal" class="terminal flex-grow-1"></div>
+                </section>
+            </div>
+        </div>
+    </section>
+</div>

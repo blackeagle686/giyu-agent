@@ -1,12 +1,71 @@
 const API_BASE = 'http://127.0.0.1:8765';
+const DASHBOARD_BASE = window.location.pathname.startsWith('/dashboard')
+    ? '/dashboard/'
+    : '/';
 let cpuChart, ramChart, diskChart, scoreChart;
 const historySize = 20;
+const MAX_LOCAL_REPORTS = 60;
+const POLL_INTERVAL_MS = 3000;
 const charts = {
     cpu: { instance: null, data: Array(historySize).fill(0) },
     ram: { instance: null, data: Array(historySize).fill(0) },
     disk: { instance: null, data: Array(historySize).fill(0) },
     net: { instance: null, data: Array(historySize).fill(0) }
 };
+let isUpdating = false;
+let updateTimer = null;
+let isCommandRunning = false;
+let dom = {};
+
+async function loadTemplateInto(slotId, templatePath) {
+    const slot = document.getElementById(slotId);
+    if (!slot) return;
+    const resolvedPath = new URL(templatePath, window.location.origin + DASHBOARD_BASE).toString();
+    const response = await fetch(resolvedPath, { cache: "no-cache" });
+    if (!response.ok) {
+        throw new Error(`Failed loading template ${templatePath}: ${response.status}`);
+    }
+    slot.innerHTML = await response.text();
+}
+
+async function loadDashboardTemplates() {
+    await Promise.all([
+        loadTemplateInto("header-slot", "./templates/header.html"),
+        loadTemplateInto("command-slot", "./templates/command_bar.html"),
+        loadTemplateInto("sidebar-slot", "./templates/sidebar.html"),
+        loadTemplateInto("metrics-slot", "./templates/metrics.html"),
+        loadTemplateInto("footer-slot", "./templates/footer.html"),
+    ]);
+}
+
+function setOverlayError(message) {
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return;
+    const paragraph = overlay.querySelector('.loader-content p');
+    if (paragraph) paragraph.textContent = message;
+    overlay.classList.remove('hidden');
+}
+
+function cacheDomRefs() {
+    dom = {
+        overlay: document.getElementById('loading-overlay'),
+        sendBtn: document.getElementById('send-btn'),
+        agentInput: document.getElementById('agent-input'),
+        logTerminal: document.getElementById('log-terminal'),
+        taskList: document.getElementById('task-list'),
+        reportsList: document.getElementById('reports-list'),
+    };
+}
+
+function setCommandUiState(running) {
+    isCommandRunning = running;
+    if (!dom.sendBtn || !dom.agentInput) return;
+    dom.sendBtn.disabled = running;
+    dom.sendBtn.innerHTML = running
+        ? '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Running'
+        : '<i class="bi bi-send-fill me-1"></i>Run';
+    dom.agentInput.disabled = running;
+}
 
 // Initialize Charts
 function initCharts() {
@@ -81,15 +140,18 @@ let localReports = [];
 
 // Fetch and Update Data
 async function updateData() {
+    if (isUpdating) return;
+    isUpdating = true;
     try {
         const healthRes = await fetch(`${API_BASE}/health`);
         const health = await healthRes.json();
         
-        const overlay = document.getElementById('loading-overlay');
+        const overlay = dom.overlay || document.getElementById('loading-overlay');
         if (health.agent_ready) {
             overlay.classList.add('hidden');
         } else {
             overlay.classList.remove('hidden');
+            isUpdating = false;
             return;
         }
 
@@ -99,7 +161,16 @@ async function updateData() {
         const backbone = await backboneRes.json();
 
         // Simple Hash Check to avoid unnecessary DOM updates
-        const currentHash = JSON.stringify({status, backbone});
+        const currentHash = JSON.stringify({
+            s: status.current_report?.timestamp || 0,
+            e: status.escalation_state?.timestamp || "",
+            a: (status.anomalies || []).length,
+            t: (backbone.tasks || []).length,
+            p: (backbone.plans || []).length,
+            g: (backbone.generations || []).length,
+            r: (backbone.stability_reports || []).length,
+            h: Object.keys(status.agent_heartbeats || {}).length,
+        });
         if (currentHash === lastDataHash) return;
         lastDataHash = currentHash;
 
@@ -112,7 +183,20 @@ async function updateData() {
 
     } catch (error) {
         console.error('Failed to fetch status:', error);
+    } finally {
+        isUpdating = false;
     }
+}
+
+function scheduleDataLoop() {
+    if (updateTimer) {
+        clearTimeout(updateTimer);
+    }
+    const run = async () => {
+        await updateData();
+        updateTimer = setTimeout(run, POLL_INTERVAL_MS);
+    };
+    updateTimer = setTimeout(run, POLL_INTERVAL_MS);
 }
 
 function updateStabilityUI(report, escalation) {
@@ -335,55 +419,78 @@ function updateReports(generations) {
 
 // Send Command
 async function sendCommand() {
-    const input = document.getElementById('agent-input');
+    if (isCommandRunning) return;
+    const input = dom.agentInput || document.getElementById('agent-input');
     const task = input.value.trim();
     if (!task) return;
 
     input.value = '';
     const session_id = 'gui_session_' + Math.floor(Math.random() * 1000);
+    setCommandUiState(true);
     
     // Clear terminal and tasks
-    document.getElementById('log-terminal').innerHTML = '<div class="line"><span class="info">Sending command to Giyu...</span></div>';
-    document.getElementById('task-list').innerHTML = '';
+    (dom.logTerminal || document.getElementById('log-terminal')).innerHTML = '<div class="line"><span class="info">Sending command to Giyu...</span></div>';
+    (dom.taskList || document.getElementById('task-list')).innerHTML = '';
 
-    const response = await fetch(`${API_BASE}/chat/stream`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task, session_id, mode: 'auto' })
-    });
+    try {
+        const response = await fetch(`${API_BASE}/chat/stream`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ task, session_id, mode: 'auto' })
+        });
+        if (!response.ok || !response.body) {
+            throw new Error(`Stream request failed: ${response.status}`);
+        }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    
-    let agentResponse = "";
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let agentResponse = "";
+        let sseBuffer = "";
 
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-        for (const line of lines) {
-            if (line.startsWith('data: ')) {
-                const event = JSON.parse(line.substring(6));
+            sseBuffer += decoder.decode(value, { stream: true });
+            const frames = sseBuffer.split('\n\n');
+            sseBuffer = frames.pop() || "";
+
+            for (const frame of frames) {
+                const dataLine = frame
+                    .split('\n')
+                    .find((line) => line.startsWith('data: '));
+                if (!dataLine) continue;
+                let event;
+                try {
+                    event = JSON.parse(dataLine.substring(6));
+                } catch {
+                    continue;
+                }
                 handleAgentEvent(event);
-                
+
                 if (event.type === 'chunk') {
                     agentResponse += event.content;
                 } else if (event.type === 'done' && agentResponse.trim().length > 0) {
                     const cpu = document.getElementById('cpu-value').textContent;
                     const ram = document.getElementById('ram-value').textContent;
                     const disk = document.getElementById('disk-value').textContent;
-                    
+
                     localReports.unshift({
                         timestamp: Math.floor(Date.now() / 1000),
                         content: `**User Request:** ${task}\n\n**System Context:** \`CPU: ${cpu}%\` | \`RAM: ${ram}%\` | \`DISK: ${disk}%\`\n\n**Agent Analysis:**\n${agentResponse.trim()}`
                     });
-                    
-                    updateData(); // Force immediate UI refresh
+                    if (localReports.length > MAX_LOCAL_REPORTS) {
+                        localReports = localReports.slice(0, MAX_LOCAL_REPORTS);
+                    }
+                    await updateData(); // Force immediate UI refresh
                 }
             }
         }
+    } catch (error) {
+        console.error('Command stream failed:', error);
+        handleAgentEvent({ type: 'error', content: String(error) });
+    } finally {
+        setCommandUiState(false);
     }
 }
 
@@ -415,19 +522,26 @@ function handleAgentEvent(event) {
 }
 
 // Main Initialization
-function initDashboard() {
-    initCharts();
-    initNet(); // Start the background net
-    setInterval(updateClock, 1000);
-    setInterval(updateData, 3000);
-    
-    document.getElementById('send-btn').addEventListener('click', sendCommand);
-    document.getElementById('agent-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendCommand();
-    });
+async function initDashboard() {
+    try {
+        await loadDashboardTemplates();
+        cacheDomRefs();
+        initCharts();
+        initNet(); // Start the background net
+        setInterval(updateClock, 1000);
+        scheduleDataLoop();
+        
+        document.getElementById('send-btn').addEventListener('click', sendCommand);
+        document.getElementById('agent-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendCommand();
+        });
 
-    updateClock();
-    updateData();
+        updateClock();
+        updateData();
+    } catch (error) {
+        console.error('Dashboard initialization failed:', error);
+        setOverlayError('Dashboard templates failed to load. Please refresh or verify /dashboard/templates paths.');
+    }
 }
 
 // Ensure initialization runs regardless of script timing

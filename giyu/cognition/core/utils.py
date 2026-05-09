@@ -6,6 +6,7 @@ import json
 import os
 import asyncio
 from typing import Dict, Any
+import re
 
 from ..helpers.tasks import TASK_FILE, _load_tasks, _mark_task, _reset_failed_tasks
 from ..helpers.plan import (
@@ -16,6 +17,9 @@ from ..helpers.generation import GENERATION_FILE
 from ..helpers.state import STATE_FILE, _init_state_from_tasks, _update_state, _clear_state
 from ..helpers.observability import log_agent_action
 from .prompts import build_fast_answer_prompt
+from ..brains.command_translator import CommandRuleEngine, LLMCommandTranslator
+from ..brains.error_interpreter import ErrorInterpreter
+from giyu.backend.auth import validate_clearance_token
 
 
 # ---------------------------------------------------------------------------
@@ -108,11 +112,14 @@ FORBIDDEN_PATTERNS = [
     # Delete / destructive operations
     "rm ", "rmdir ", "unlink ", "truncate ",
     # System and boot files
-    "/boot", "/etc", "/dev", "/sys", "/proc", "mkfs", "dd ", "fdisk", "parted",
+    "/boot", "/etc", "/sys", "/proc", "mkfs", "dd ", "fdisk", "parted",
     # Heavy processing and system state
-    "stress", "yes ", ":(){ :|:& };:", "reboot", "shutdown", "init 0", "init 6", "halt"
+    "stress", "stress-ng", "yes ", ":(){ :|:& };:", "reboot", "shutdown", "init 0", "init 6", "halt",
+    # Additional high-resource / abuse patterns
+    "gpu-burn", "hashcat", "bitcoin-miner", "cryptominer", "while true", "for (;;)", "openssl speed"
 ]
 SENSITIVE_TOOLS = ["terminal", "vscode_terminal_run", "run_shell_command"]
+RULE_ENGINE = CommandRuleEngine()
 
 
 def pre_execution_validate(actions: list) -> list:
@@ -124,18 +131,26 @@ def pre_execution_validate(actions: list) -> list:
             errors.append(f"Safety Violation: Path '{path}' is absolute or contains '..'")
         if tool in SENSITIVE_TOOLS:
             cmd = (kwargs.get("command") or kwargs.get("code") or "").strip()
+            if not cmd:
+                errors.append("Safety Violation: Empty shell command.")
+                continue
             for pat in FORBIDDEN_PATTERNS:
-                if pat in cmd:
+                if pat.lower() in cmd.lower():
                     errors.append(f"Safety Violation: Command '{cmd}' contains forbidden pattern '{pat}'")
+            # Extra blocklist regex checks from rule engine config.
+            if RULE_ENGINE.is_blocked(cmd):
+                errors.append(f"Safety Violation: Command '{cmd}' matches blocked pattern.")
     return errors
 
 
 def is_sensitive_action(actions: list) -> bool:
-    # All commands not caught by the blacklist are automatically allowed
-    return False
+    return any(a.get("tool") in SENSITIVE_TOOLS for a in actions)
 
 
 async def check_and_ask_approval(actions: list) -> tuple[bool, list]:
+    # Default to direct execution. Set GIYU_REQUIRE_APPROVAL=true to restore prompts.
+    if os.getenv("GIYU_REQUIRE_APPROVAL", "false").lower() != "true":
+        return True, actions
     if not is_sensitive_action(actions):
         return True, actions
     from giyu.server import vscode_ipc_context
@@ -152,6 +167,16 @@ async def check_and_ask_approval(actions: list) -> tuple[bool, list]:
         print(f"[LOOP ERROR] Approval request failed: {e}")
         return False, actions
 
+
+async def translate_intent_to_action(ctx, intent: str, working_dir: str = ".") -> tuple[list, dict]:
+    """Translate intent into one safe action using rule engine then LLM fallback."""
+    matched = RULE_ENGINE.match_intent(intent, working_dir=working_dir)
+    if matched.get("status") == "allow_match":
+        return ([{"tool": "run_shell_command", "kwargs": {"command": matched["command"]}}], matched)
+    translator = LLMCommandTranslator(ctx["llm"])
+    llm_out = await translator.translate(intent, working_dir=working_dir)
+    cmd = (llm_out.get("command") or "").strip()
+    return ([{"tool": "run_shell_command", "kwargs": {"command": cmd}}], llm_out)
 
 # ---------------------------------------------------------------------------
 # Cleanup & Background
@@ -324,7 +349,27 @@ async def validate_and_execute(ctx, actions) -> tuple[str, list, bool]:
     if not approved:
         log_agent_action("loop", "ask_approval", {"actions": actions}, {"result": "denied"}, "failed")
         return "Execution denied by user.", actions, False
+    require_clearance = os.getenv("GIYU_REQUIRE_CLEARANCE", "false").lower() == "true"
+    if require_clearance and is_sensitive_action(actions):
+        clearance_token = (ctx.get("clearance_token") or "").strip()
+        if not validate_clearance_token(clearance_token):
+            return "Execution denied: missing or invalid Rengoku clearance token.", actions, False
     result = await ctx["actor"].execute({"actions": actions})
+    # Non-zero shell outcomes get structured interpretation.
+    try:
+        if isinstance(result, list):
+            shell_action = next((a for a in actions if a.get("tool") == "run_shell_command"), None)
+            shell_res = next((r for r in result if hasattr(r, "success")), None)
+            if shell_action and shell_res is not None and not getattr(shell_res, "success", True):
+                interpreter = ErrorInterpreter(ctx["llm"])
+                report = await interpreter.interpret(
+                    command=shell_action.get("kwargs", {}).get("command", ""),
+                    stderr=getattr(shell_res, "error", "") or getattr(shell_res, "output", ""),
+                    exit_code=-1,
+                )
+                result.append({"error_report": report})
+    except Exception:
+        pass
     log_agent_action("actor", "execute_actions", {"actions": actions}, {"result": result}, "success")
     return result, actions, True
 

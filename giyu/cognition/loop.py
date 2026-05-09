@@ -23,6 +23,23 @@ class GiyuLoop(AgentLoop):
     MAX_RETRIES = 2
     MAX_ACTIONS = 30
 
+    class _NoopPipeline:
+        """Compatibility fallback when Phoenix JSON pipeline specs are missing."""
+
+        async def run(self, *_args, **_kwargs):
+            return {}
+
+    def _load_pipeline_spec(self, filename: str):
+        """
+        Phoenix compatibility shim:
+        Some installations miss default_*_pipeline.json assets.
+        Our custom Giyu loop does not use base pipelines, so fallback is safe.
+        """
+        try:
+            return super()._load_pipeline_spec(filename)
+        except FileNotFoundError:
+            return self._NoopPipeline()
+
     def __init__(self, thinker, planner, actor, reflector, analyzer, 
                  stability_scorer=None, decision_gate=None, correlation_engine=None, generator=None):
         super().__init__(thinker, planner, actor, reflector, analyzer)
@@ -30,6 +47,7 @@ class GiyuLoop(AgentLoop):
         self.decision_gate = decision_gate
         self.correlation_engine = correlation_engine
         self.generator = generator or GiyuGenerator(self.planner.llm)
+        self._clearance_token = None
 
     @property
     def _ctx(self):
@@ -40,7 +58,10 @@ class GiyuLoop(AgentLoop):
             stability_scorer=self.stability_scorer,
             decision_gate=self.decision_gate,
             correlation_engine=self.correlation_engine,
-            llm=self.planner.llm, bg=self._background_tasks, retries=self.MAX_RETRIES,
+            llm=self.planner.llm,
+            bg=self._background_tasks,
+            retries=self.MAX_RETRIES,
+            clearance_token=self._clearance_token,
         )
 
     # ------------------------------------------------------------------
@@ -49,6 +70,7 @@ class GiyuLoop(AgentLoop):
 
     async def run(self, prompt: str, memory, session_id: str, mode: str = "auto", **kw) -> str:
         clear_logs()
+        self._clearance_token = kw.get("rengoku_clearance_token")
         ctx = self._ctx
         is_resume = prompt.strip().lower() == "resume" or mode == "resume"
 
@@ -100,6 +122,7 @@ class GiyuLoop(AgentLoop):
 
     async def run_stream(self, prompt: str, memory, session_id: str, mode: str = "auto", **kw):
         clear_logs()
+        self._clearance_token = kw.get("rengoku_clearance_token")
         ctx = self._ctx
         is_resume = prompt.strip().lower() == "resume" or mode == "resume"
 

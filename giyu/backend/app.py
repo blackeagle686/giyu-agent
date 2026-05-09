@@ -9,12 +9,31 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .state import log, get_agent, set_agent
 
+_bg_tasks: set[asyncio.Task] = set()
+
+
+def _track_task(task: asyncio.Task) -> None:
+    _bg_tasks.add(task)
+
+    def _cleanup(t: asyncio.Task) -> None:
+        _bg_tasks.discard(t)
+        try:
+            t.exception()
+        except Exception:
+            pass
+
+    task.add_done_callback(_cleanup)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     log.warning(f"🔥 Giyu Server starting in {os.getcwd()} …")
-    asyncio.create_task(_initialize_agent())
+    _track_task(asyncio.create_task(_initialize_agent()))
     yield
+    for task in list(_bg_tasks):
+        task.cancel()
+    if _bg_tasks:
+        await asyncio.gather(*list(_bg_tasks), return_exceptions=True)
     log.warning("🛑 Giyu Agent server shut down.")
 
 
@@ -27,7 +46,7 @@ async def _initialize_agent():
         log.warning("✅ Giyu Agent is now READY.")
         
         # Start background stability monitoring
-        asyncio.create_task(_stability_monitor_loop(agent))
+        _track_task(asyncio.create_task(_stability_monitor_loop(agent)))
     except Exception as exc:
         log.error(f"❌ Failed to initialize agent: {exc}", exc_info=True)
 
@@ -35,6 +54,9 @@ async def _initialize_agent():
 async def _stability_monitor_loop(agent):
     """Periodically runs the stability check to update the backbone."""
     from giyu.cognition.core.utils import stability_check
+    from giyu.tools.stability_tools import ProcessAnomalyMonitor
+    from giyu.cognition.helpers.backbone import add_anomaly, update_escalation_status
+    import psutil
     
     # Use the agent's existing memory
     memory = agent.memory
@@ -47,13 +69,22 @@ async def _stability_monitor_loop(agent):
         "correlation_engine": agent.correlation_engine,
         "bg": set()
     }
-    
+    monitor = ProcessAnomalyMonitor()
+    self_pid = os.getpid()
+
     while True:
         try:
             await stability_check(ctx, memory, session_id)
+            for proc in psutil.process_iter(["pid", "ppid", "name"]):
+                if proc.info.get("ppid") != self_pid:
+                    continue
+                anomaly = monitor.evaluate_process(proc)
+                if anomaly:
+                    add_anomaly(anomaly)
+                    update_escalation_status("warn", f"Process anomaly: {anomaly.get('anomaly_type')}")
         except Exception as e:
             log.error(f"Stability Monitor Error: {e}")
-        await asyncio.sleep(5) # Update every 5 seconds
+        await asyncio.sleep(1) # Update every 1 second
 
 
 def create_app() -> FastAPI:

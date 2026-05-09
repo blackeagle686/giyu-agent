@@ -1,11 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from .state import get_agent
 from giyu.cognition.helpers.backbone import _load_backbone
+from .auth import require_agent_token
 
 router = APIRouter(prefix="/stability", tags=["stability"])
 
 @router.get("/status")
-async def get_stability_status():
+async def get_stability_status(_auth=Depends(require_agent_token)):
     """Returns the current system stability status and escalation state."""
     data = _load_backbone()
     reports = data.get("stability_reports", [])
@@ -24,13 +25,13 @@ async def get_stability_status():
     }
 
 @router.get("/history")
-async def get_stability_history(limit: int = 50):
+async def get_stability_history(limit: int = 50, _auth=Depends(require_agent_token)):
     """Returns the history of stability reports."""
     data = _load_backbone()
     return data.get("stability_reports", [])[-limit:]
 
 @router.get("/backbone")
-async def get_backbone_slim():
+async def get_backbone_slim(_auth=Depends(require_agent_token)):
     """Returns the backbone context with limited stability history for performance."""
     backbone = _load_backbone()
     # Only return the last 5 reports to keep payload light

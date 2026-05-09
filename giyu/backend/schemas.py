@@ -9,6 +9,7 @@ class ChatRequest(BaseModel):
     task: str
     session_id: Optional[str] = None
     mode: str = "auto"   # "auto" | "plan" | "fast_ans"
+    rengoku_clearance_token: Optional[str] = None
 
 
 class ToolResult(BaseModel):

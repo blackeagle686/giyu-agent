@@ -2,16 +2,17 @@
 Giyu Backend — Configuration management endpoints.
 """
 import os
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from .state import log, set_agent
 from .schemas import ConfigUpdate
+from .auth import require_agent_token
 
 router = APIRouter()
 
 
 @router.get("/config")
-async def get_config():
+async def get_config(_auth=Depends(require_agent_token)):
     """Returns current environment variables for Giyu."""
     from pathlib import Path
     from dotenv import load_dotenv
@@ -19,7 +20,7 @@ async def get_config():
     load_dotenv(override=True)
 
     return {
-        "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY", ""),
+        "OPENAI_API_KEY_SET": bool(os.getenv("OPENAI_API_KEY", "").strip()),
         "OPENAI_BASE_URL": os.getenv("OPENAI_BASE_URL", ""),
         "OPENAI_LLM_MODEL": os.getenv("OPENAI_LLM_MODEL", "gpt-4o"),
         "GIYU_LOG_LEVEL": os.getenv("LOG_LEVEL", "WARNING"),
@@ -27,7 +28,7 @@ async def get_config():
 
 
 @router.post("/config")
-async def update_config(update: ConfigUpdate):
+async def update_config(update: ConfigUpdate, _auth=Depends(require_agent_token)):
     """Updates the .env file with new settings."""
     from pathlib import Path
     env_path = Path(".env")

@@ -3,16 +3,17 @@ Giyu Backend — Text-to-Speech & Speech-to-Text endpoints.
 """
 import os
 import subprocess
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from .schemas import TTSRequest
+from .auth import require_agent_token
 
 router = APIRouter()
 
 # ── Text-to-Speech ────────────────────────────────────────────────────────────
 
 @router.post("/tts")
-async def text_to_speech(req: TTSRequest):
+async def text_to_speech(req: TTSRequest, _auth=Depends(require_agent_token)):
     """Generate speech from text using gTTS and return base64-encoded MP3."""
     import io
     import base64
@@ -40,7 +41,7 @@ _recording_file = "/tmp/giyu_recording.wav"
 
 
 @router.post("/stt/start")
-async def start_recording():
+async def start_recording(_auth=Depends(require_agent_token)):
     """Start recording audio using arecord."""
     global _recording_process
 
@@ -64,7 +65,7 @@ async def start_recording():
 
 
 @router.post("/stt/stop")
-async def stop_recording():
+async def stop_recording(_auth=Depends(require_agent_token)):
     """Stop recording and transcribe using SpeechRecognition (Google API)."""
     global _recording_process
 

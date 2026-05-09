@@ -1078,3 +1078,206 @@ main {
 .tracking-wide {
     letter-spacing: 2px;
 }
+
+/* ---------------------------------------------------------
+   UX Polish Pass (layout cohesion + responsive tuning)
+--------------------------------------------------------- */
+
+.app-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 1.25rem;
+    gap: 1.25rem;
+}
+
+main.row.g-3.g-xl-4 {
+    --bs-gutter-x: 1rem;
+    --bs-gutter-y: 1rem;
+}
+
+.dashboard-sidebar .card,
+.dashboard-main .card {
+    border-radius: 14px;
+}
+
+.glass-header {
+    padding: 1rem 1.25rem;
+    margin-bottom: 0;
+}
+
+.header-meta {
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.logo h1.gradient-text {
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+}
+
+.command-card {
+    padding: 1rem 1.1rem;
+}
+
+.command-card .card-header-enhanced h3 {
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.input-wrapper {
+    gap: 0.75rem;
+}
+
+#agent-input {
+    min-height: 48px;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+}
+
+#send-btn {
+    min-height: 48px;
+    min-width: 120px;
+    border-radius: 10px;
+    padding: 0 1.1rem;
+    white-space: nowrap;
+}
+
+.sidebar-sticky {
+    top: 0.75rem;
+    gap: 1rem;
+}
+
+.task-stream {
+    max-height: min(70vh, 720px);
+}
+
+.score-card {
+    min-height: 355px;
+}
+
+.score-display {
+    width: 180px;
+    height: 180px;
+}
+
+.score-value span {
+    font-size: 2.5rem;
+}
+
+.metric-card {
+    min-height: 165px;
+}
+
+.metric-header h3 {
+    font-size: 0.72rem !important;
+}
+
+.metric-value {
+    font-size: 1.55rem;
+}
+
+.chart-container {
+    height: 62px;
+}
+
+.stability-reports,
+.stability-log {
+    min-height: 420px;
+}
+
+.stability-log .terminal {
+    min-height: 290px;
+    max-height: 480px;
+}
+
+.reports-list {
+    min-height: 290px;
+    max-height: 480px;
+}
+
+.report-template {
+    border-style: dashed;
+    border-color: rgba(100, 255, 218, 0.22);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.report-template .report-content h3 {
+    margin-top: 0.2rem;
+}
+
+.glass-footer {
+    margin-top: 0.75rem;
+    padding: 1rem 1.25rem;
+}
+
+.powered-by-badge {
+    left: auto;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    transform-origin: bottom right;
+}
+
+@media (max-width: 1200px) {
+    .score-card {
+        min-height: 320px;
+    }
+    .stability-reports,
+    .stability-log {
+        min-height: 360px;
+    }
+}
+
+@media (max-width: 992px) {
+    .app-container {
+        padding: 0.85rem;
+    }
+    .glass-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+    .header-meta {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .sidebar-sticky {
+        position: static;
+    }
+    .task-stream {
+        max-height: none;
+    }
+    .dashboard-bottom-row > div {
+        width: 100%;
+    }
+    .stability-log .terminal,
+    .reports-list {
+        max-height: 320px;
+    }
+}
+
+@media (max-width: 768px) {
+    .powered-by-badge {
+        display: none;
+    }
+    .command-card .card-header-enhanced {
+        align-items: flex-start;
+    }
+    .input-wrapper {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    #send-btn {
+        width: 100%;
+    }
+    .clock-container,
+    .landing-link,
+    .user-profile {
+        width: 100%;
+        justify-content: center;
+    }
+    .header-meta {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

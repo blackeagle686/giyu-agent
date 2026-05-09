@@ -2,8 +2,11 @@ import psutil
 import os
 import time
 import subprocess
+import asyncio
 from typing import List, Dict, Any
 from phoenix.framework.agent.tools.base import BaseTool, ToolResult
+from giyu.runtime.pty_executor import PTYExecutor
+from giyu.cognition.brains.command_translator import CommandRuleEngine
 
 class SystemSnapshotReader(BaseTool):
     name = "system_snapshot_reader"
@@ -27,8 +30,12 @@ class LogStreamAnalyzer(BaseTool):
     async def execute(self, log_path: str = "/var/log/syslog", lines: int = 100, **kwargs) -> ToolResult:
         try:
             if not os.path.exists(log_path):
-                # Fallback to a mock or dmesg if syslog not accessible
-                result = subprocess.check_output(["dmesg", "|", "tail", f"-n {lines}"], shell=True).decode()
+                # Fallback if syslog not accessible
+                result = subprocess.check_output(
+                    f"dmesg | tail -n {int(lines)}",
+                    shell=True,
+                    text=True,
+                )
                 return ToolResult(success=True, output=result)
             
             result = subprocess.check_output(["tail", f"-n {lines}", log_path]).decode()
@@ -42,8 +49,9 @@ class AgentHeartbeatMonitor(BaseTool):
     async def execute(self, **kwargs) -> ToolResult:
         agents = ["Giyu", "Shinobu", "Rengoku", "Mitsuri", "Obanai", "Sanemi", "Gyomei", "Tengen", "Muichiro"]
         status = {}
+        base_dir = os.getenv("HASHIRA_ROOT", "/home/tlk/Documents/Projects/my_AItools/Hashira")
         for agent in agents:
-            path = f"/home/tlk/Documents/Projects/my_AItools/Hashira/{agent}"
+            path = os.path.join(base_dir, agent)
             status[agent] = "active" if os.path.exists(path) else "missing"
         return ToolResult(success=True, output=str(status))
 
@@ -90,8 +98,8 @@ class CoreEscalationTrigger(BaseTool):
     description = "Sends critical alerts to Core Orchestrator when system is unstable."
     async def execute(self, level: str, message: str, **kwargs) -> ToolResult:
         alert = f"[ESCALATION] Level: {level}, Message: {message}, Time: {time.time()}"
-        # Mock escalation by writing to a global alert file
-        with open("/home/tlk/Documents/Projects/my_AItools/Hashira/alerts.log", "a") as f:
+        alerts_path = os.getenv("GIYU_ALERTS_PATH", "/tmp/hashira_alerts.log")
+        with open(alerts_path, "a", encoding="utf-8") as f:
             f.write(alert + "\n")
         return ToolResult(success=True, output=f"Escalated to Core: {alert}")
 
@@ -118,15 +126,79 @@ class ShellCommandTool(BaseTool):
     description = "Safely executes system commands for diagnostics (e.g., 'ip addr', 'ping -c 1 8.8.8.8', 'netstat')."
     async def execute(self, command: str, **kwargs) -> ToolResult:
         try:
-            # Prevent dangerous commands (very basic check)
-            forbidden = ["rm ", "mv ", "dd ", "> /dev/", ":(){ :|:& };:"]
-            if any(f in command for f in forbidden):
-                return ToolResult(success=False, output="", error="Command rejected for safety reasons.")
-                
-            result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT).decode()
-            return ToolResult(success=True, output=result)
+            rule_engine = CommandRuleEngine()
+            cmd = (command or "").strip()
+            if not cmd:
+                return ToolResult(success=False, output="", error="Empty command rejected.")
+            if rule_engine.is_blocked(cmd):
+                return ToolResult(success=False, output="", error="Command rejected by blocklist.")
+            lowered = cmd.lower()
+            high_risk_substrings = [
+                "rm ", "rmdir ", "unlink ", "truncate ", "mkfs", "dd ", "fdisk", "parted",
+                "reboot", "shutdown", "halt", "stress", "stress-ng", "gpu-burn",
+                "yes ", ":(){ :|:& };:", "while true", "for (;;)", "cryptominer",
+            ]
+            for pat in high_risk_substrings:
+                if pat in lowered:
+                    return ToolResult(success=False, output="", error=f"Command rejected by safety policy: {pat}")
+
+            timeout_ms = int(kwargs.get("timeout_ms", 30000))
+            working_dir = kwargs.get("working_dir") or os.getenv("GIYU_WORKDIR", "/tmp/giyu")
+            env_vars = kwargs.get("env_vars") or {}
+
+            executor = PTYExecutor()
+            result = await executor.execute(
+                command=cmd,
+                working_dir=working_dir,
+                env_vars=env_vars,
+                timeout_ms=timeout_ms,
+            )
+            if result["exit_code"] != 0:
+                return ToolResult(success=False, output=result["output"], error=f"Exit code {result['exit_code']}")
+            return ToolResult(success=True, output=result["output"])
         except Exception as e:
             return ToolResult(success=False, output="", error=str(e))
+
+
+class ProcessAnomalyMonitor:
+    """Tracks process anomalies for process trees owned by Giyu."""
+
+    def __init__(self):
+        self._cpu_breach: dict[int, int] = {}
+        self._rss_history: dict[int, tuple[float, float]] = {}
+
+    def evaluate_process(self, proc: psutil.Process) -> dict | None:
+        try:
+            now = time.time()
+            cpu = proc.cpu_percent(interval=None)
+            mem = proc.memory_info().rss
+            pid = proc.pid
+            if proc.status() == psutil.STATUS_ZOMBIE:
+                return {"pid": pid, "anomaly_type": "zombie", "action_taken": "waitpid_cleanup"}
+            if cpu > 90.0:
+                self._cpu_breach[pid] = self._cpu_breach.get(pid, 0) + 1
+                if self._cpu_breach[pid] >= 10:
+                    return {"pid": pid, "cpu_pct": cpu, "anomaly_type": "cpu_runaway", "action_taken": "warn_or_kill"}
+            else:
+                self._cpu_breach[pid] = 0
+
+            prev = self._rss_history.get(pid)
+            self._rss_history[pid] = (now, float(mem))
+            if prev:
+                prev_ts, prev_mem = prev
+                dt = max(now - prev_ts, 1e-6)
+                growth_mb_per_min = ((mem - prev_mem) / (1024 * 1024)) / (dt / 60)
+                if growth_mb_per_min > 50:
+                    return {
+                        "pid": pid,
+                        "mem_rss": mem,
+                        "anomaly_type": "memory_growth",
+                        "growth_mb_per_min": round(growth_mb_per_min, 2),
+                        "action_taken": "warn_or_kill",
+                    }
+        except Exception:
+            return None
+        return None
 
 class SystemSecurityAuditor(BaseTool):
     name = "security_audit_tool"

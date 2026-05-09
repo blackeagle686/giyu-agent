@@ -21,6 +21,8 @@ async def get_giyu_agent(on_startup_progress=None):
     from .cognition.brains.decision_gate import DecisionGate
     from .cognition.brains.analyzer import GiyuAnalyzer
     from .cognition.brains.correlation_engine import CorrelationEngine
+    from .cognition.brains.command_translator import CommandRuleEngine, LLMCommandTranslator
+    from .cognition.brains.error_interpreter import ErrorInterpreter
     from phoenix.framework.agent.core.profile import AgentProfile
     # Load Profile
     profile_path = os.path.join(os.path.dirname(__file__), "profile.json")
@@ -80,5 +82,8 @@ async def get_giyu_agent(on_startup_progress=None):
     agent.stability_scorer = agent.loop.stability_scorer
     agent.decision_gate = agent.loop.decision_gate
     agent.correlation_engine = agent.loop.correlation_engine
+    agent.command_rule_engine = CommandRuleEngine()
+    agent.command_translator = LLMCommandTranslator(agent.thinker.llm)
+    agent.error_interpreter = ErrorInterpreter(agent.thinker.llm)
     
     return agent

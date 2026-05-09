@@ -1,0 +1,44 @@
+allow_rules:
+  - name: list_files
+    intent_regex: "(list|show).*(files|directory|folder)"
+    command_template: "ls -la {working_dir}"
+  - name: print_working_dir
+    intent_regex: "(where am i|current directory|pwd)"
+    command_template: "pwd"
+  - name: disk_usage
+    intent_regex: "(disk usage|storage|free space)"
+    command_template: "df -h"
+  - name: memory_usage
+    intent_regex: "(memory usage|ram usage|memory status)"
+    command_template: "free -h"
+  - name: process_list
+    intent_regex: "(show|list).*(processes|running tasks)"
+    command_template: "ps aux --sort=-%cpu | head -n 20"
+  - name: net_connections
+    intent_regex: "(network|socket|connections|ports)"
+    command_template: "ss -tulnp"
+
+allow_command_patterns:
+  - "^echo\\s+.+$"
+  - "^pwd$"
+  - "^ls(\\s+.+)?$"
+  - "^df(\\s+.+)?$"
+  - "^free(\\s+.+)?$"
+  - "^ps(\\s+.+)?$"
+  - "^ss(\\s+.+)?$"
+  - "^which\\s+nvidia-smi$"
+  - "^nvidia-smi$"
+  - "^nvidia-smi\\s+--query-gpu=[a-zA-Z0-9_.,]+\\s+--format=csv,noheader,nounits$"
+  - "^nvidia-smi\\s+--query-gpu=[a-zA-Z0-9_.,]+\\s+--format=csv$"
+  - "^nvidia-smi\\s+-L$"
+
+block_patterns:
+  - "rm\\s+-rf\\s+/"
+  - "mkfs\\."
+  - "dd\\s+if="
+  - "shutdown"
+  - "reboot"
+  - "halt"
+  - "curl\\s+.*\\|\\s*(bash|sh)"
+  - "wget\\s+.*\\|\\s*(bash|sh)"
+  - ">|>>\\s*/dev/(?!null\\b)"

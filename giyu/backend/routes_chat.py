@@ -3,8 +3,9 @@ Giyu Backend — Chat & Agent streaming endpoints.
 """
 import asyncio
 import json
+import time
 import uuid
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
 from .state import (
@@ -12,12 +13,13 @@ from .state import (
     get_agent, _ipc_responses,
 )
 from .schemas import ChatRequest, ToolResult
+from .auth import require_agent_token
 
 router = APIRouter()
 
 
 @router.post("/chat/stream")
-async def chat_stream(req: ChatRequest):
+async def chat_stream(req: ChatRequest, _auth=Depends(require_agent_token)):
     """Stream agent response as Server-Sent Events."""
     agent = get_agent()
     if agent is None:
@@ -26,7 +28,8 @@ async def chat_stream(req: ChatRequest):
         return StreamingResponse(_error(), media_type="text/event-stream")
 
     session_id = req.session_id or str(uuid.uuid4())
-    queue: asyncio.Queue = asyncio.Queue()
+    queue: asyncio.Queue = asyncio.Queue(maxsize=200)
+    request_started = time.perf_counter()
 
     async def _emit_event(event: dict):
         await queue.put(event)
@@ -53,8 +56,14 @@ async def chat_stream(req: ChatRequest):
     async def _run_agent():
         token = vscode_ipc_context.set(_vscode_call)
         try:
+            # Phoenix Agent.run_stream does not accept arbitrary kwargs.
+            # Pass clearance token through the custom loop instance instead.
+            if hasattr(agent, "loop") and hasattr(agent.loop, "_clearance_token"):
+                agent.loop._clearance_token = req.rengoku_clearance_token
+            # Giyu should default to planning loop, not Phoenix auto fast-answer routing.
+            selected_mode = "plan" if req.mode == "auto" else req.mode
             async for event in agent.run_stream(
-                req.task, session_id=session_id, mode=req.mode
+                req.task, session_id=session_id, mode=selected_mode
             ):
                 await queue.put(event)
         except Exception as exc:
@@ -66,7 +75,7 @@ async def chat_stream(req: ChatRequest):
 
     async def _generate():
         agent_task = asyncio.create_task(_run_agent())
-        yield f"data: {json.dumps({'type':'session','session_id':session_id})}\n\n"
+        yield f"data: {json.dumps({'type':'session','session_id':session_id,'queue_maxsize':200})}\n\n"
 
         while True:
             while _pending_file_opens:
@@ -74,6 +83,10 @@ async def chat_stream(req: ChatRequest):
                 yield f"data: {json.dumps({'type':'vscode_tool','call_id':'noop','tool':'open_file','arguments':{'path': file_path}})}\n\n"
 
             event = await queue.get()
+            if "metrics" not in event and event.get("type") in {"chunk", "status"}:
+                event["metrics"] = {
+                    "elapsed_ms": int((time.perf_counter() - request_started) * 1000)
+                }
             yield f"data: {json.dumps(event)}\n\n"
             if event.get("type") == "done":
                 break
@@ -84,7 +97,7 @@ async def chat_stream(req: ChatRequest):
 
 
 @router.post("/tool/result")
-async def tool_result(res: ToolResult):
+async def tool_result(res: ToolResult, _auth=Depends(require_agent_token)):
     """Receive results for pending VS Code tool calls."""
     if res.call_id in _ipc_responses:
         _ipc_responses[res.call_id].set_result(res.result)
@@ -93,5 +106,5 @@ async def tool_result(res: ToolResult):
 
 
 @router.post("/reset")
-async def reset_session():
+async def reset_session(_auth=Depends(require_agent_token)):
     return {"status": "reset"}
