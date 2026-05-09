@@ -8,3 +8,7 @@ chroma_db/
 *.log
 giyu.trace.jsonl
 # giyu.context.json
+dashboard/node_modules/
+dist/
+build/
+.DS_Store
