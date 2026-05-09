@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+repo.git/
+chroma_db/
+*.log
+giyu.trace.jsonl
+giyu.context.json
