@@ -15,12 +15,12 @@ class SplashScreen(Screen):
 
     DEFAULT_CSS = """
     SplashScreen {
-        background: #1B1F24;
+        background: #020408;
         align: center middle;
     }
 
     #splash-logo {
-        color: #A89F91;
+        color: #00f2ff;
         text-style: bold;
         text-align: center;
         width: auto;
@@ -28,40 +28,36 @@ class SplashScreen(Screen):
     }
 
     #splash-subtitle {
-        color: #A89F91;
+        color: #94a3b8;
         text-align: center;
         width: auto;
         margin-top: 1;
+        text-style: italic;
     }
-
-    /* Cinematic aura effect */
-    .aura-1 { color: #A89F91; }
-    .aura-2 { color: #2E333A; }
-    .aura-3 { color: #F1E9DD; }
     """
 
     def compose(self) -> ComposeResult:
         with Middle():
             with Center():
                 yield Static("", id="splash-logo")
-                yield Static("powered by phoenix-ai", id="splash-subtitle")
+                yield Static("powered by phoenix-ai engine", id="splash-subtitle")
 
     def on_mount(self) -> None:
         self._animate_aura()
         # Transition after 2.5 seconds
-        self.set_timer(2.8, self._dismiss)
+        self.set_timer(2.5, self._dismiss)
 
     def _animate_aura(self) -> None:
         logo = (
-            "█████╗ ███████╗██╗  ██╗██████╗  ██████╗ ██████╗ ███╗   ██╗\n"
-            "██╔══██╗██╔════╝██║  ██║██╔══██╗██╔═══██╗██╔══██╗████╗  ██║\n"
-            "███████║███████╗███████║██████╔╝██║   ██║██████╔╝██╔██╗ ██║\n"
-            "██╔══██║╚════██║██╔══██║██╔══██╗██║   ██║██╔══██╗██║╚██╗██║\n"
-            "██║  ██║███████║██║  ██║██████╔╝╚██████╔╝██║  ██║██║ ╚████║\n"
-            "╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝\n"
-            "               A G E N T   A U R A                         "
+            " ██████╗ ██╗██╗   ██╗██╗   ██╗\n"
+            "██╔════╝ ██║╚██╗ ██╔╝██║   ██║\n"
+            "██║  ███╗██║ ╚████╔╝ ██║   ██║\n"
+            "██║   ██║██║  ╚██╔╝  ██║   ██║\n"
+            "╚██████╔╝██║   ██║   ╚██████╔╝\n"
+            " ╚═════╝ ╚═╝   ╚═╝    ╚═════╝ \n"
+            "   S T A B I L I T Y   S E N T I N E L"
         )
-        self.query_one("#splash-logo", Static).update(Text(logo, style="bold #FF6B00"))
+        self.query_one("#splash-logo", Static).update(Text(logo, style="bold #00f2ff"))
         self.query_one("#splash-subtitle", Static).update("powerd by phoenix-ai")
 
     def _dismiss(self) -> None:
