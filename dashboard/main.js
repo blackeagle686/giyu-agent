@@ -353,15 +353,29 @@ function initDashboard() {
     setInterval(updateClock, 1000);
     setInterval(updateData, 3000);
     
-    document.getElementById('send-btn').addEventListener('click', () => sendCommand('agent-input'));
-    document.getElementById('agent-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendCommand('agent-input');
-    });
+    const sendBtn = document.getElementById('send-btn');
+    if (sendBtn) {
+        sendBtn.addEventListener('click', () => sendCommand('agent-input'));
+    }
+    
+    const agentInput = document.getElementById('agent-input');
+    if (agentInput) {
+        agentInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendCommand('agent-input');
+        });
+    }
 
-    document.getElementById('modal-send-btn').addEventListener('click', () => sendCommand('modal-agent-input'));
-    document.getElementById('modal-agent-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendCommand('modal-agent-input');
-    });
+    const modalSendBtn = document.getElementById('modal-send-btn');
+    if (modalSendBtn) {
+        modalSendBtn.addEventListener('click', () => sendCommand('modal-agent-input'));
+    }
+    
+    const modalAgentInput = document.getElementById('modal-agent-input');
+    if (modalAgentInput) {
+        modalAgentInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendCommand('modal-agent-input');
+        });
+    }
 
     const modeBtns = document.querySelectorAll('.mode-btn');
     modeBtns.forEach(btn => {
