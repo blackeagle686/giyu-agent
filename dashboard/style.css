@@ -514,8 +514,8 @@ body::before {
 }
 
 @keyframes modal-energy {
-    from { filter: blur(8px) brightness(0.4) saturate(80%); transform: scale(1); }
-    to { filter: blur(12px) brightness(0.8) saturate(120%); transform: scale(1.05); }
+    from { filter: blur(2px) brightness(0.4) saturate(80%); transform: scale(1); }
+    to { filter: blur(1px) brightness(0.8) saturate(120%); transform: scale(1.05); }
 }
 
 /* Chat Messaging UI */
