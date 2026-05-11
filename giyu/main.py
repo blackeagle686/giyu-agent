@@ -11,6 +11,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual import work
 from .cli.theme import GIYU_THEME
 from .cli.splash_screen import SplashScreen
 
