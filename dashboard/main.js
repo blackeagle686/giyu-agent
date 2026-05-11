@@ -95,6 +95,8 @@ function updateClock() {
 }
 
 let lastDataHash = '';
+let localReports = [];
+
 async function updateData() {
     if (isStreaming) return; // Prevent background sync from wiping active chat
     try {
@@ -126,9 +128,6 @@ async function updateData() {
         updateReports(backbone.generations);
 
     } catch (error) {
-        console.warn('Sync failed:', error);
-    }
-}
         console.warn('Sync failed:', error);
     }
 }
