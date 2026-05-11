@@ -486,6 +486,17 @@ function initNet() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let particles = [];
+    let mouse = { x: null, y: null, radius: 150 };
+
+    window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
+
+    window.addEventListener('mouseout', () => {
+        mouse.x = null;
+        mouse.y = null;
+    });
 
     function resize() {
         canvas.width = window.innerWidth;
@@ -496,49 +507,74 @@ function initNet() {
         constructor() {
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
-            this.speedX = Math.random() * 0.5 - 0.25;
-            this.speedY = Math.random() * 0.5 - 0.25;
+            this.size = Math.random() * 1.5 + 0.5;
+            this.speedX = Math.random() * 0.3 - 0.15;
+            this.speedY = Math.random() * 0.3 - 0.15;
         }
+
         update() {
             this.x += this.speedX;
             this.y += this.speedY;
+
             if (this.x > canvas.width) this.x = 0;
             if (this.x < 0) this.x = canvas.width;
             if (this.y > canvas.height) this.y = 0;
             if (this.y < 0) this.y = canvas.height;
+
+            if (mouse.x !== null) {
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < mouse.radius) {
+                    const force = (mouse.radius - dist) / mouse.radius;
+                    this.x -= (dx / dist) * force * 2;
+                    this.y -= (dy / dist) * force * 2;
+                }
+            }
         }
+
         draw() {
             ctx.fillStyle = COLORS.primary;
             ctx.beginPath();
-            ctx.arc(this.x, this.y, 1, 0, Math.PI * 2);
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
             ctx.fill();
         }
     }
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach((p, i) => {
-            p.update();
-            p.draw();
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update();
+            particles[i].draw();
+
             for (let j = i + 1; j < particles.length; j++) {
-                const dx = p.x - particles[j].x;
-                const dy = p.y - particles[j].y;
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 150) {
-                    ctx.strokeStyle = `rgba(0, 242, 255, ${0.1 * (1 - dist/150)})`;
+
+                if (dist < 100) {
+                    ctx.strokeStyle = `rgba(0, 242, 255, ${0.15 * (1 - dist / 100)})`;
+                    ctx.lineWidth = 0.5;
                     ctx.beginPath();
-                    ctx.moveTo(p.x, p.y);
+                    ctx.moveTo(particles[i].x, particles[i].y);
                     ctx.lineTo(particles[j].x, particles[j].y);
                     ctx.stroke();
                 }
             }
-        });
+        }
         requestAnimationFrame(animate);
     }
 
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', () => {
+        resize();
+        particles = [];
+        const count = (canvas.width * canvas.height) / 18000;
+        for (let i = 0; i < count; i++) particles.push(new Particle());
+    });
+
     resize();
-    for (let i = 0; i < 60; i++) particles.push(new Particle());
+    const count = (canvas.width * canvas.height) / 18000;
+    for (let i = 0; i < count; i++) particles.push(new Particle());
     animate();
 }
 
