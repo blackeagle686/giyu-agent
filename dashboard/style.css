@@ -753,7 +753,7 @@ body::before {
 /* Modern Footer */
 .modern-footer {
     padding: 3rem 2rem 2rem;
-    background: linear-gradient(to bottom, transparent, rgba(2, 4, 8, 0.4));
+    background: linear-gradient(to bottom, transparent, rgba(2, 4, 8, 0.8));
     border-top: 1px solid var(--border);
     margin-top: 4rem !important;
 }
