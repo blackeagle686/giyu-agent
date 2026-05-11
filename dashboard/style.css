@@ -684,3 +684,38 @@ body::before {
     .input-group-premium { border-radius: 20px; flex-direction: column; }
     .input-group-premium button { border-radius: 12px; }
 }
+
+/* Live Report Styles */
+.live-report {
+    border: 1px solid var(--primary) !important;
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.live-report::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.1), transparent);
+    animation: live-shimmer 2s infinite;
+}
+
+@keyframes live-shimmer {
+    0% { left: -100%; }
+    100% { left: 200%; }
+}
+
+.pulse-text {
+    animation: text-pulse 1.5s infinite;
+}
+
+@keyframes text-pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
