@@ -88,10 +88,8 @@ class GiyuApp(App):
             # Ensure splash is visible for at least 1.2s for a smooth transition
             await asyncio.sleep(1.2)
             
-            # Switch screens
-            if self.screen.__class__.__name__ == "SplashScreen":
-                self.pop_screen()
-            self.push_screen(main_screen)
+            # Atomic switch to the main interface
+            self.switch_screen(main_screen)
             
         except Exception as e:
             # Fallback: if background load fails, try to show something
