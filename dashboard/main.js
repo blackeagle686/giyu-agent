@@ -375,8 +375,11 @@ async function sendCommand(inputId = 'agent-input') {
         for (const line of lines) {
             if (line.startsWith('data: ')) {
                 const event = JSON.parse(line.substring(6));
-                if (event.type === 'chunk') agentResponse += event.content;
-                else if (event.type === 'done' && agentResponse.trim()) {
+                if (event.type === 'chunk') {
+                    agentResponse += event.content;
+                    const typing = document.getElementById('typing-' + session_id);
+                    if (typing) typing.remove();
+                } else if (event.type === 'done' && agentResponse.trim()) {
                     localReports.unshift({
                         timestamp: Date.now() / 1000,
                         content: `**Query:** ${task}\n\n**Analysis:**\n${agentResponse.trim()}`
