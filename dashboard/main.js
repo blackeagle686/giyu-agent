@@ -255,6 +255,7 @@ function updateLogs(reports) {
 function updateReports(generations) {
     if (!window.marked) return;
     const list = document.getElementById('reports-list');
+    const modalHistory = document.getElementById('modal-chat-history');
     const combined = [...localReports, ...(generations || [])];
     
     if (combined.length === 0) {
@@ -263,6 +264,8 @@ function updateReports(generations) {
     }
 
     const fragment = document.createDocumentFragment();
+    const modalFragment = document.createDocumentFragment();
+
     combined.forEach((gen, index) => {
         const item = document.createElement('div');
         item.className = 'report-card';
@@ -279,26 +282,38 @@ function updateReports(generations) {
             });
         } else content = gen.text || gen.content || JSON.stringify(gen, null, 2);
 
-        item.innerHTML = `
+        const innerHtml = `
             <h5><i class="bi bi-shield-shaded"></i> Guardian Report <span style="margin-left: auto; font-size: 0.6rem; color: var(--text-ghost);">${timestamp}</span></h5>
             <div style="font-size: 0.75rem; line-height: 1.6; color: var(--text-dim);">${marked.parse(content)}</div>
         `;
+        
+        item.innerHTML = innerHtml;
         fragment.appendChild(item);
+
+        // Mirror to modal
+        const modalItem = item.cloneNode(true);
+        modalItem.classList.add('mb-4');
+        modalFragment.appendChild(modalItem);
     });
     
     list.innerHTML = '';
     list.appendChild(fragment);
+
+    if (modalHistory) {
+        modalHistory.innerHTML = '';
+        modalHistory.appendChild(modalFragment);
+        modalHistory.scrollTop = modalHistory.scrollHeight;
+    }
 }
 
-async function sendCommand() {
-    const input = document.getElementById('agent-input');
+async function sendCommand(inputId = 'agent-input') {
+    const input = document.getElementById(inputId);
     const task = input.value.trim();
     if (!task) return;
 
-    input.value = '';
-    const session_id = 'gui_' + Date.now();
-    
-    const activeModeBtn = document.querySelector('.mode-btn.active');
+    // Determine mode from the closest container
+    const container = input.closest('.input-container-premium');
+    const activeModeBtn = container.querySelector('.mode-btn.active');
     const mode = activeModeBtn ? activeModeBtn.dataset.mode : 'auto';
     
     const response = await fetch(`${API_BASE}/chat/stream`, {
@@ -338,15 +353,21 @@ function initDashboard() {
     setInterval(updateClock, 1000);
     setInterval(updateData, 3000);
     
-    document.getElementById('send-btn').addEventListener('click', sendCommand);
+    document.getElementById('send-btn').addEventListener('click', () => sendCommand('agent-input'));
     document.getElementById('agent-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendCommand();
+        if (e.key === 'Enter') sendCommand('agent-input');
+    });
+
+    document.getElementById('modal-send-btn').addEventListener('click', () => sendCommand('modal-agent-input'));
+    document.getElementById('modal-agent-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendCommand('modal-agent-input');
     });
 
     const modeBtns = document.querySelectorAll('.mode-btn');
     modeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            modeBtns.forEach(b => b.classList.remove('active'));
+            const parent = btn.closest('.mode-selector');
+            parent.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
         });
     });
