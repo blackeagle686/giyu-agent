@@ -389,7 +389,7 @@ async function sendCommand(inputId = 'agent-input') {
                         const typing = document.getElementById('typing-' + session_id);
                         if (typing) typing.remove();
                         
-                        // Update/Create AI bubble in real-time
+                        // 1. Update Modal UI
                         let aiBubble = document.getElementById('ai-' + session_id);
                         if (!aiBubble) {
                             aiBubble = document.createElement('div');
@@ -400,6 +400,22 @@ async function sendCommand(inputId = 'agent-input') {
                         }
                         aiBubble.querySelector('.content').innerHTML = marked.parse(agentResponse);
                         modalHistory.scrollTop = modalHistory.scrollHeight;
+
+                        // 2. Update Bento Grid Analysis Section
+                        const bentoList = document.getElementById('reports-list');
+                        if (bentoList) {
+                            let bentoLive = document.getElementById('bento-live-' + session_id);
+                            if (!bentoLive) {
+                                bentoLive = document.createElement('div');
+                                bentoLive.className = 'report-card live-report';
+                                bentoLive.id = 'bento-live-' + session_id;
+                                bentoList.prepend(bentoLive); // Put live analysis at the top
+                            }
+                            bentoLive.innerHTML = `
+                                <h5><i class="bi bi-shield-shaded pulse-text"></i> LIVE ANALYSIS <span style="margin-left: auto; font-size: 0.6rem; color: var(--primary);">PLANNING...</span></h5>
+                                <div style="font-size: 0.75rem; line-height: 1.6; color: var(--text-dim);">${marked.parse(agentResponse)}</div>
+                            `;
+                        }
 
                     } else if (event.type === 'done') {
                         if (agentResponse.trim()) {
