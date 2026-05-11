@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giyu | System Stability Guardian</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
-
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="style.css">
 
@@ -20,254 +17,131 @@
 </head>
 <body>
     <div id="loading-overlay" class="loading-overlay">
-        <div class="loader-content">
-            <span class="loader-icon">🌊</span>
-            <h2>Initializing Giyu Agent</h2>
-            <p>Loading AI modules & Phoenix framework...</p>
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
-        </div>
+        <div class="loader-wave"></div>
+        <h2 style="margin-top: 2rem; color: var(--primary); letter-spacing: 4px;">GIYU</h2>
+        <p style="color: var(--text-dim); margin-top: 0.5rem;">Synchronizing with Hashira Network...</p>
     </div>
+
+    <canvas id="bg-net"></canvas>
 
     <div class="app-container">
         <header class="glass-header">
             <div class="logo">
-                <div class="logo-icon-wrapper">
-                    <span class="icon">🌊</span>
-                </div>
-                <h1 class="gradient-text">GIYU</h1>
-                <div class="subtitle-wrapper">
-                    <span class="subtitle">System Stability Monitoring AI</span>
+                <div class="logo-icon-wrapper">🌊</div>
+                <div>
+                    <h1 class="gradient-text">GIYU</h1>
+                    <span class="subtitle">Stability Sentinel</span>
                 </div>
             </div>
             <div class="header-meta">
-                <div class="clock-container">
-                    <i class="bi bi-clock"></i>
-                    <div class="clock" id="clock">--:--:--</div>
-                </div>
-                <div class="nav-links">
-                    <a href="/landing" class="landing-link"><i class="bi bi-rocket-takeoff"></i> Launchpad</a>
-                </div>
+                <div class="clock-container" id="clock">--:--:--</div>
                 <div class="user-profile">
-                    <div class="avatar">
-                        <span>AT</span>
-                    </div>
-                    <div class="user-info">
-                        <span class="user-name">A. Tomioka</span>
-                        <div class="status-badge aura-active" id="agent-status">
-                            <span class="pulse-dot"></span> ACTIVE
-                        </div>
+                    <div class="avatar">AT</div>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-size: 0.8rem; font-weight: 600;">Giyu Tomioka</span>
+                        <span style="font-size: 0.6rem; color: var(--success);">● Active</span>
                     </div>
                 </div>
             </div>
         </header>
 
-        <main class="row g-3 g-xl-4">
-            <!-- Sidebar -->
-            <div class="col-lg-4 col-xl-3 order-2 order-lg-1">
-                <div class="d-flex flex-column gap-3 sidebar-sticky">
-                    <aside class="task-stream card">
-                        <div class="card-header-enhanced">
-                            <div class="header-icon-badge"><i class="bi bi-list-task"></i></div>
-                            <div>
-                                <h2 class="mb-0">Task Stream</h2>
-                                <span class="header-subtitle">Live execution pipeline</span>
-                            </div>
+        <main class="bento-grid">
+            <!-- Stability Score -->
+            <section class="bento-card area-score">
+                <div class="score-container">
+                    <h3 style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2rem;">System Stability</h3>
+                    <div class="score-display">
+                        <canvas id="scoreChart"></canvas>
+                        <div class="score-value">
+                            <span id="stability-score">--</span>
+                            <small id="stability-state">STABLE</small>
                         </div>
-                        <div class="card-divider"></div>
-                        <div id="task-list" class="stepper"></div>
-                    </aside>
-
-                    <div class="agent-heartbeat card">
-                        <div class="card-header-enhanced">
-                            <div class="header-icon-badge pulse-badge"><i class="bi bi-heart-pulse"></i></div>
-                            <div>
-                                <h3 class="mb-0">Agent Heartbeat</h3>
-                                <span class="header-subtitle">Hashira network status</span>
-                            </div>
+                    </div>
+                    <div style="margin-top: 2rem; display: flex; gap: 2rem;">
+                        <div style="text-align: center;">
+                            <span style="display: block; font-size: 1.2rem; font-weight: 700; color: var(--warning);" id="anomaly-count">0</span>
+                            <small style="font-size: 0.6rem; color: var(--text-ghost);">ANOMALIES</small>
                         </div>
-                        <div class="card-divider"></div>
-                        <div id="heartbeat-grid" class="heartbeat-grid"></div>
+                        <div style="text-align: center;">
+                            <span style="display: block; font-size: 1.2rem; font-weight: 700; color: var(--primary);">100%</span>
+                            <small style="font-size: 0.6rem; color: var(--text-ghost);">INTEGRITY</small>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Main Content -->
-            <div class="col-lg-8 col-xl-9 order-1 order-lg-2">
-                <section class="main-dashboard d-flex flex-column gap-3">
-
-                    <!-- Top Row: Score + Metrics -->
-                    <div class="row g-3">
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card score-card h-100 d-flex flex-column justify-content-center">
-                                <div class="card-header-enhanced justify-content-center">
-                                    <div class="header-icon-badge"><i class="bi bi-shield-check"></i></div>
-                                    <h2 class="mb-0">Stability Score</h2>
-                                </div>
-                                <div class="card-divider"></div>
-                                <div class="score-display mx-auto my-3">
-                                    <canvas id="scoreChart"></canvas>
-                                    <div class="score-value">
-                                        <span id="stability-score">--</span>
-                                        <small>SYSTEM HEALTH</small>
-                                    </div>
-                                </div>
-                                <div class="score-meta text-center mt-auto">
-                                    <span id="stability-state">STABLE</span>
-                                    <div class="anomaly-count"><i class="bi bi-exclamation-triangle me-1"></i>Anomalies: <span id="anomaly-count">0</span></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-8 col-lg-7">
-                            <div class="row g-3 h-100">
-                                <div class="col-sm-6">
-                                    <div class="card metric-card h-100 d-flex flex-column accent-cyan">
-                                        <div class="metric-header">
-                                            <h3><i class="bi bi-cpu me-2"></i>CPU USAGE</h3>
-                                            <span class="metric-badge" id="cpu-badge">Normal</span>
-                                        </div>
-                                        <div class="metric-value"><span id="cpu-value">--</span><small>%</small></div>
-                                        <div class="chart-container mt-auto">
-                                            <canvas id="cpuChart"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="card metric-card h-100 d-flex flex-column accent-blue">
-                                        <div class="metric-header">
-                                            <h3><i class="bi bi-memory me-2"></i>MEMORY</h3>
-                                            <span class="metric-badge" id="ram-badge">Normal</span>
-                                        </div>
-                                        <div class="metric-value"><span id="ram-value">--</span><small>%</small></div>
-                                        <div class="chart-container mt-auto">
-                                            <canvas id="ramChart"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="card metric-card h-100 d-flex flex-column accent-purple">
-                                        <div class="metric-header">
-                                            <h3><i class="bi bi-hdd me-2"></i>DISK I/O</h3>
-                                            <span class="metric-badge" id="disk-badge">Normal</span>
-                                        </div>
-                                        <div class="metric-value"><span id="disk-value">--</span><small>%</small></div>
-                                        <div class="chart-container mt-auto">
-                                            <canvas id="diskChart"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="card metric-card h-100 d-flex flex-column accent-teal">
-                                        <div class="metric-header">
-                                            <h3><i class="bi bi-wifi me-2"></i>LATENCY</h3>
-                                            <span class="metric-badge" id="net-badge">Normal</span>
-                                        </div>
-                                        <div class="metric-value"><span id="net-value">--</span><small>ms</small></div>
-                                        <div class="chart-container mt-auto">
-                                            <canvas id="netChart"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Metrics -->
+            <section class="bento-card area-metrics">
+                <div class="metrics-row">
+                    <div class="metric-mini-card">
+                        <h4>CPU Usage</h4>
+                        <div class="val"><span id="cpu-value">--</span>%</div>
+                        <div class="chart-min"><canvas id="cpuChart"></canvas></div>
                     </div>
-
-                    <!-- Bottom Row: Reports + Terminal -->
-                    <div class="row g-3 flex-grow-1">
-                        <div class="col-lg-6 d-flex flex-column">
-                            <div class="stability-reports card p-4 h-100 d-flex flex-column">
-                                <div class="card-header-enhanced">
-                                    <div class="header-icon-badge"><i class="bi bi-file-earmark-text"></i></div>
-                                    <div>
-                                        <h3 class="mb-0">AI Stability Reports</h3>
-                                        <span class="header-subtitle">Agent analysis output</span>
-                                    </div>
-                                </div>
-                                <div class="card-divider"></div>
-                                <div id="reports-list" class="reports-list flex-grow-1">
-                                    <div class="empty-state">
-                                        <i class="bi bi-inbox"></i>
-                                        <p>No reports generated yet.</p>
-                                        <span>Send a command to get started</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-6 d-flex flex-column gap-3">
-                            <div class="stability-log card flex-grow-1 d-flex flex-column">
-                                <div class="card-header-enhanced">
-                                    <div class="header-icon-badge"><i class="bi bi-terminal"></i></div>
-                                    <div>
-                                        <h3 class="mb-0">Stability Log</h3>
-                                        <span class="header-subtitle">Real-time system events</span>
-                                    </div>
-                                    <div class="terminal-status ms-auto">
-                                        <span class="pulse-dot"></span> LIVE
-                                    </div>
-                                </div>
-                                <div class="card-divider"></div>
-                                <div id="log-terminal" class="terminal flex-grow-1"></div>
-                            </div>
-
-                        </div>
-                        <div class="command-input card">
-                            <div class="card-header-enhanced">
-                                <div class="header-icon-badge accent-glow"><i class="bi bi-magic"></i></div>
-                                <div>
-                                    <h3 class="mb-0">Command Agent</h3>
-                                    <span class="header-subtitle">AI-powered diagnostics</span>
-                                </div>
-                            </div>
-                            <div class="card-divider"></div>
-                            <div class="input-wrapper d-flex gap-2 mt-2">
-                                <input type="text" id="agent-input" placeholder="Type a command (e.g., 'Run stability check')">
-                                <button id="send-btn"><i class="bi bi-send-fill me-1"></i>SEND</button>
-                            </div>
-                        </div>
+                    <div class="metric-mini-card">
+                        <h4>Memory</h4>
+                        <div class="val"><span id="ram-value">--</span>%</div>
+                        <div class="chart-min"><canvas id="ramChart"></canvas></div>
                     </div>
+                    <div class="metric-mini-card">
+                        <h4>Disk I/O</h4>
+                        <div class="val"><span id="disk-value">--</span>%</div>
+                        <div class="chart-min"><canvas id="diskChart"></canvas></div>
+                    </div>
+                    <div class="metric-mini-card">
+                        <h4>Latency</h4>
+                        <div class="val"><span id="net-value">--</span>ms</div>
+                        <div class="chart-min"><canvas id="netChart"></canvas></div>
+                    </div>
+                </div>
+            </section>
 
-                </section>
-            </div>
+            <!-- Task Stream -->
+            <section class="bento-card area-tasks">
+                <h3 style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.5rem;"><i class="bi bi-cpu-fill me-2"></i>Task Stream</h3>
+                <div id="task-list" class="stepper">
+                    <!-- Tasks injected here -->
+                </div>
+            </section>
+
+            <!-- Reports -->
+            <section class="bento-card area-reports">
+                <h3 style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.5rem;"><i class="bi bi-file-earmark-medical me-2"></i>AI Analysis</h3>
+                <div id="reports-list" class="reports-container">
+                    <!-- Reports injected here -->
+                </div>
+            </section>
+
+            <!-- Terminal -->
+            <section class="bento-card area-terminal">
+                <h3 style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;"><i class="bi bi-terminal-fill me-2"></i>Stability Log</h3>
+                <div id="log-terminal" class="terminal-window">
+                    <!-- Logs injected here -->
+                </div>
+            </section>
+
+            <!-- Heartbeat -->
+            <section class="bento-card area-heartbeat">
+                <h3 style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;"><i class="bi bi-activity me-2"></i>Network Pulse</h3>
+                <div id="heartbeat-grid" class="heartbeat-grid">
+                    <!-- Heartbeats injected here -->
+                </div>
+            </section>
+
+            <!-- Input Area -->
+            <section class="bento-card area-input">
+                <div class="input-group-premium">
+                    <input type="text" id="agent-input" placeholder="Initiate diagnostic command or health query...">
+                    <button id="send-btn">EXECUTE</button>
+                </div>
+            </section>
         </main>
 
-        <footer class="glass-footer mt-auto">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-                <div class="footer-brand d-flex align-items-center">
-                    <span class="icon me-2 fs-5">🌊</span>
-                    <span class="fw-bold tracking-wide text-light">GIYU</span>
-                    <span class="badge bg-dark border border-secondary ms-2 font-monospace" style="color: var(--text-dim);">v2.0</span>
-                </div>
-                <div class="footer-text text-center text-md-start">
-                    <p class="mb-0 font-monospace" style="font-size: 0.75rem; color: var(--text-dim);">
-                        <i class="bi bi-shield-check me-1" style="color: var(--success);"></i>System Stability Guardian &copy; 2026. All Systems Operational.
-                    </p>
-                </div>
-                <div class="footer-links d-flex gap-4">
-                    <a href="#" class="text-decoration-none hover-primary" style="color: var(--text-dim);"><i class="bi bi-github"></i> Repository</a>
-                    <a href="#" class="text-decoration-none hover-primary" style="color: var(--text-dim);"><i class="bi bi-terminal"></i> API Docs</a>
-                    <a href="#" class="text-decoration-none hover-primary" style="color: var(--text-dim);"><i class="bi bi-shield-lock"></i> Security</a>
-                </div>
-            </div>
+        <footer style="margin-top: 2rem; text-align: center; color: var(--text-ghost); font-size: 0.75rem;">
+            <p>&copy; 2026 Hashira-OS Stability Sentinel | Powered by Phoenix AI Architecture</p>
         </footer>
     </div>
 
-    <div class="powered-by-badge">
-        <div class="badge-glow"></div>
-        <div class="badge-content">
-            <div class="badge-icon">
-                <i class="bi bi-cpu-fill"></i>
-            </div>
-            <div class="badge-text">
-                <span class="powered-text">POWERED BY <span class="highlight">PHOENIX-AI</span></span>
-                <span class="arch-text">ASHBORN AGENT ARCHITECTURE</span>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="main.js"></script>
 </body>
 </html>
