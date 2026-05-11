@@ -111,7 +111,7 @@ class ThinkingSpinner(Static):
         dots = "." * ((self._frame_idx % 3) + 1)
         self.update(
             Text.from_markup(
-                f"  [bold $primary]{frame}[/]  [#8B949E]{self._label}[/][dim $secondary]{dots}[/]"
+                f"  [bold #00f2ff]{frame}[/]  [#8B949E]{self._label}[/][dim #7000ff]{dots}[/]"
             )
         )
 
@@ -322,7 +322,7 @@ class SidebarWidget(Vertical):
     model_name: reactive[str]    = reactive("")
 
     def compose(self) -> ComposeResult:
-        yield Static("[bold $secondary]🌊 GIYU AGENT[/]", classes="sb-title")
+        yield Static("[bold #7000ff]🌊 GIYU AGENT[/]", classes="sb-title")
         yield Static("─" * 22, classes="sb-div")
 
         yield Static("Model", classes="sb-label")
@@ -350,7 +350,7 @@ class SidebarWidget(Vertical):
         ]
         for key, desc in shortcuts:
             yield Static(
-                f"[bold #A89F91]{key:<12}[/] [#A89F91]{desc}[/]",
+                f"[bold #00f2ff]{key:<12}[/] [#e2e8f0]{desc}[/]",
                 classes="sc-row",
                 markup=True,
             )
@@ -538,7 +538,7 @@ class ChatScreen(Screen):
     def compose(self) -> ComposeResult:
         # Header
         with Horizontal(id="chat-header"):
-            yield Static("[bold $primary]🌊 GIYU[/]", id="header-logo")
+            yield Static("[bold #00f2ff]🌊 GIYU[/]", id="header-logo")
             yield Static("● Initializing", id="header-status")
 
         # Body
@@ -588,8 +588,8 @@ class ChatScreen(Screen):
     def _print_welcome(self) -> None:
         log = self.query_one("#chat-log", VerticalScroll)
         log.mount(Static(""))
-        log.mount(Static("[bold $primary]🌊  Greetings. I am Giyu.[/]", markup=True))
-        log.mount(Static("[dim $text-muted]The System Stability Sentinel is ready to monitor your network.[/]", markup=True))
+        log.mount(Static("[bold #00f2ff]🌊  Greetings. I am Giyu.[/]", markup=True))
+        log.mount(Static("[dim #94a3b8]The System Stability Sentinel is ready to monitor your network.[/]", markup=True))
         log.mount(Static(""))
 
     # ── agent init ────────────────────────────────────────────────────────────
@@ -790,7 +790,7 @@ class ChatScreen(Screen):
 
     # ── helpers ───────────────────────────────────────────────────────────────
 
-    def _set_status(self, text: str, color: str = "#39d353") -> None:
+    def _set_status(self, text: str, color: str = "#10b981") -> None:
         try:
             self.query_one("#header-status", Static).update(f"[bold {color}]{text}[/]")
         except Exception:
