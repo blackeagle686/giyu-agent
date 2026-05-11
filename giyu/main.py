@@ -75,20 +75,29 @@ class GiyuApp(App):
 
     @work(exclusive=True)
     async def _load_main_interface(self) -> None:
-        """Loads the main screen in the background to avoid blocking the UI thread."""
-        if _has_valid_config():
-            from .cli.chat_screen import ChatScreen
-            main_screen = ChatScreen()
-        else:
-            from .cli.setup_wizard import SetupWizard
-            main_screen = SetupWizard()
-        
-        # Give the splash screen at least 1 second of glory
-        await asyncio.sleep(1.0)
-        
-        # Transition to the main screen
-        self.pop_screen() # Remove the splash screen
-        self.push_screen(main_screen)
+        """Loads the main screen in the background and transitions from splash."""
+        try:
+            # Prepare the main interface
+            if _has_valid_config():
+                from .cli.chat_screen import ChatScreen
+                main_screen = ChatScreen()
+            else:
+                from .cli.setup_wizard import SetupWizard
+                main_screen = SetupWizard()
+            
+            # Ensure splash is visible for at least 1.2s for a smooth transition
+            await asyncio.sleep(1.2)
+            
+            # Switch screens
+            if self.screen.__class__.__name__ == "SplashScreen":
+                self.pop_screen()
+            self.push_screen(main_screen)
+            
+        except Exception as e:
+            # Fallback: if background load fails, try to show something
+            import sys
+            print(f"Error loading main interface: {e}", file=sys.stderr)
+            self.exit()
 
 
 def main() -> None:
