@@ -7,37 +7,39 @@ from textual.theme import Theme
 
 # ── Modern Premium Palette ───────────────────────────────────────────────────
 # Backgrounds
-PHOENIX_DARK     = "#0A0C10"  # Deep Onyx
-PHOENIX_SURFACE  = "#12161D"  # Obsidian Surface
-PHOENIX_PANEL    = "#1C2128"  # Slate Panel
+# ── Giyu Design Tokens (Synced with Dashboard) ────────────────────────────────
+# Backgrounds
+GIYU_DARK     = "#020408"  # Deep Onyx
+GIYU_SURFACE  = "#0A0C14"  # Obsidian Surface
+GIYU_PANEL    = "#12161D"  # Slate Panel
 
 # Accents
-PHOENIX_ORANGE   = "#FF7B00"  # Vibrant Solar Orange
-PHOENIX_AMBER    = "#FF9500"  # Warm Glow
-PHOENIX_GOLD     = "#D4AF37"  # Metallic Gold
-PHOENIX_GLOW     = "#FFD700"  # Pure Gold Glow
+GIYU_CYAN     = "#00f2ff"  # Electric Cyan
+GIYU_PURPLE   = "#7000ff"  # Plasma Purple
+GIYU_MAGENTA  = "#FF00FF"  # Neon Magenta
+GIYU_GLOW     = "#00B4D8"  # Cyber Blue
 
 # Functional
-PHOENIX_BORDER   = "#30363D"  # Steel Border
-PHOENIX_MUTED    = "#484F58"  # Iron Gray
-PHOENIX_DIMTEXT  = "#8B949E"  # Muted Ash
-PHOENIX_TEXT     = "#E6EDF3"  # Soft Cloud
-PHOENIX_GREEN    = "#238636"  # Forest Emerald
-PHOENIX_RED      = "#DA3633"  # Crimson Edge
-PHOENIX_YELLOW   = "#D29922"  # Ochre Warning
+GIYU_BORDER   = "#1C2128"  # Steel Border
+GIYU_MUTED    = "#484F58"  # Iron Gray
+GIYU_DIMTEXT  = "#94a3b8"  # Muted Ash
+GIYU_TEXT     = "#e2e8f0"  # Soft Cloud
+GIYU_SUCCESS  = "#10b981"  # Emerald
+GIYU_ERROR    = "#ef4444"  # Crimson
+GIYU_WARNING  = "#f59e0b"  # Amber
 
 # ── Textual Theme ────────────────────────────────────────────────────────────
 GIYU_THEME = Theme(
     name="giyu",
-    primary=PHOENIX_ORANGE,
-    secondary=PHOENIX_GOLD,
-    accent=PHOENIX_AMBER,
-    background=PHOENIX_DARK,
-    surface=PHOENIX_SURFACE,
-    panel=PHOENIX_PANEL,
-    boost=PHOENIX_MUTED,
-    warning=PHOENIX_YELLOW,
-    error=PHOENIX_RED,
-    success=PHOENIX_GREEN,
+    primary=GIYU_CYAN,
+    secondary=GIYU_PURPLE,
+    accent=GIYU_CYAN,
+    background=GIYU_DARK,
+    surface=GIYU_SURFACE,
+    panel=GIYU_PANEL,
+    boost=GIYU_MUTED,
+    warning=GIYU_WARNING,
+    error=GIYU_ERROR,
+    success=GIYU_SUCCESS,
     dark=True,
 )
