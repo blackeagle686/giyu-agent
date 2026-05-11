@@ -290,15 +290,22 @@
                 <!-- INPUT AREA -->
                 <div class="col-12">
                     <section class="bento-card area-input">
-                        <div class="input-group-premium">
-                            <input
-                                type="text"
-                                id="agent-input"
-                                placeholder="Initiate diagnostic command or health query..."
-                            >
-                            <button id="send-btn">
-                                EXECUTE
-                            </button>
+                        <div class="input-container-premium">
+                            <div class="mode-selector" id="mode-selector">
+                                <button class="mode-btn active" data-mode="auto" title="Full Planning & Execution">
+                                    <i class="bi bi-gear-wide-connected"></i> <span>Planning</span>
+                                </button>
+                                <button class="mode-btn" data-mode="fast_ans" title="Quick AI Response">
+                                    <i class="bi bi-chat-dots"></i> <span>Chat</span>
+                                </button>
+                            </div>
+                            <div class="input-wrapper">
+                                <input type="text" id="agent-input" placeholder="Initiate diagnostic command or health query...">
+                                <button id="send-btn">
+                                    <i class="bi bi-send-fill"></i>
+                                    <span>EXECUTE</span>
+                                </button>
+                            </div>
                         </div>
                     </section>
                 </div>
