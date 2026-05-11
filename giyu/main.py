@@ -85,6 +85,7 @@ class GiyuApp(App):
         await asyncio.sleep(1.0)
         
         # Transition to the main screen
+        self.pop_screen() # Remove the splash screen
         self.push_screen(main_screen)
 
 

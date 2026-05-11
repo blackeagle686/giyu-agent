@@ -44,8 +44,6 @@ class SplashScreen(Screen):
 
     def on_mount(self) -> None:
         self._animate_aura()
-        # Transition after 1 second (Optimized for faster startup)
-        self.set_timer(1.0, self._dismiss)
 
     def _animate_aura(self) -> None:
         logo = (
