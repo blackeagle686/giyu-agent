@@ -7,6 +7,7 @@ or directly to the full-screen chat interface otherwise.
 import os
 import re
 import sys
+import asyncio
 from pathlib import Path
 from dotenv import load_dotenv
 from textual.app import App, ComposeResult
