@@ -275,7 +275,6 @@ function updateReports(generations) {
     bentoReports.forEach((gen, index) => {
         const item = document.createElement('div');
         item.className = 'report-card';
-        // ... (render logic remains same)
         
         let content = '';
         const timestamp = gen.timestamp ? new Date(gen.timestamp * 1000).toLocaleString() : `Report #${index + 1}`;
@@ -289,20 +288,23 @@ function updateReports(generations) {
             });
         } else content = gen.text || gen.content || JSON.stringify(gen, null, 2);
 
-        const innerHtml = `
+        item.innerHTML = `
             <h5><i class="bi bi-shield-shaded"></i> Guardian Report <span style="margin-left: auto; font-size: 0.6rem; color: var(--text-ghost);">${timestamp}</span></h5>
             <div style="font-size: 0.75rem; line-height: 1.6; color: var(--text-dim);">${marked.parse(content)}</div>
         `;
-        
-        item.innerHTML = innerHtml;
         fragment.appendChild(item);
+    });
+    
+    list.innerHTML = '';
+    list.appendChild(fragment);
 
-        // Mirror to modal as Chat Bubbles
-        if (modalHistory) {
+    // Modal: Oldest first (Conversational)
+    if (modalHistory) {
+        const modalFragment = document.createDocumentFragment();
+        combined.forEach((gen) => {
             const aiMsg = document.createElement('div');
             aiMsg.className = 'message msg-ai';
             
-            // If it's a history item that contains both query and analysis
             if (typeof gen === 'object' && gen.content && gen.content.includes('**Query:**')) {
                 const parts = gen.content.split('**Analysis:**');
                 const userText = parts[0].replace('**Query:**', '').trim();
@@ -315,16 +317,11 @@ function updateReports(generations) {
 
                 aiMsg.innerHTML = `<h5>Giyu</h5><div>${marked.parse(aiText)}</div>`;
             } else {
-                aiMsg.innerHTML = `<h5>Giyu</h5><div>${marked.parse(content)}</div>`;
+                aiMsg.innerHTML = `<h5>Giyu</h5><div>${marked.parse(gen.content || gen.text || JSON.stringify(gen))}</div>`;
             }
             modalFragment.appendChild(aiMsg);
-        }
-    });
-    
-    list.innerHTML = '';
-    list.appendChild(fragment);
+        });
 
-    if (modalHistory) {
         modalHistory.innerHTML = '';
         modalHistory.appendChild(modalFragment);
         modalHistory.scrollTop = modalHistory.scrollHeight;
