@@ -298,10 +298,13 @@ async function sendCommand() {
     input.value = '';
     const session_id = 'gui_' + Date.now();
     
+    const activeModeBtn = document.querySelector('.mode-btn.active');
+    const mode = activeModeBtn ? activeModeBtn.dataset.mode : 'auto';
+    
     const response = await fetch(`${API_BASE}/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task, session_id, mode: 'auto' })
+        body: JSON.stringify({ task, session_id, mode: mode })
     });
 
     const reader = response.body.getReader();
@@ -338,6 +341,14 @@ function initDashboard() {
     document.getElementById('send-btn').addEventListener('click', sendCommand);
     document.getElementById('agent-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendCommand();
+    });
+
+    const modeBtns = document.querySelectorAll('.mode-btn');
+    modeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            modeBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
     });
 
     updateClock();
