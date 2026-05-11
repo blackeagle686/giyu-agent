@@ -259,19 +259,23 @@ function updateReports(generations) {
     if (!window.marked) return;
     const list = document.getElementById('reports-list');
     const modalHistory = document.getElementById('modal-chat-history');
-    const combined = [...localReports, ...(generations || [])];
+    
+    // Sort combined reports by timestamp (oldest first)
+    const combined = [...localReports, ...(generations || [])]
+        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
     
     if (combined.length === 0) {
         list.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-ghost); font-size: 0.8rem;">Waiting for analysis reports...</div>';
         return;
     }
 
+    // Bento Grid: Newest first
+    const bentoReports = [...combined].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     const fragment = document.createDocumentFragment();
-    const modalFragment = document.createDocumentFragment();
-
-    combined.forEach((gen, index) => {
+    bentoReports.forEach((gen, index) => {
         const item = document.createElement('div');
         item.className = 'report-card';
+        // ... (render logic remains same)
         
         let content = '';
         const timestamp = gen.timestamp ? new Date(gen.timestamp * 1000).toLocaleString() : `Report #${index + 1}`;
@@ -402,7 +406,7 @@ async function sendCommand(inputId = 'agent-input') {
 
                     } else if (event.type === 'done') {
                         if (agentResponse.trim()) {
-                            localReports.unshift({
+                            localReports.push({
                                 timestamp: Date.now() / 1000,
                                 content: `**Query:** ${task}\n\n**Analysis:**\n${agentResponse.trim()}`
                             });
