@@ -311,6 +311,9 @@ async function sendCommand(inputId = 'agent-input') {
     const task = input.value.trim();
     if (!task) return;
 
+    input.value = '';
+    const session_id = 'gui_' + Date.now();
+
     // Determine mode from the closest container
     const container = input.closest('.input-container-premium');
     const activeModeBtn = container.querySelector('.mode-btn.active');
