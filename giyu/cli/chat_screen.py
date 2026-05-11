@@ -79,14 +79,14 @@ class ThinkingSpinner(Static):
     DEFAULT_CSS = """
     ThinkingSpinner {
         height: 0;
-        background: #12161D;
-        border-top: round #FF7B00 20%;
-        border-bottom: round #FF7B00 20%;
-        color: #E6EDF3;
+        background: $surface;
+        border-top: round $primary 20%;
+        border-bottom: round $primary 20%;
+        color: $text;
         text-style: bold;
         padding: 0 2;
         margin: 1 4;
-        outline: solid #FFD70022;
+        outline: solid $primary 10%;
         opacity: 0;
         transition: height 300ms, opacity 300ms;
     }
@@ -111,7 +111,7 @@ class ThinkingSpinner(Static):
         dots = "." * ((self._frame_idx % 3) + 1)
         self.update(
             Text.from_markup(
-                f"  [bold #FF7B00]{frame}[/]  [#8B949E]{self._label}[/][dim #D4AF37]{dots}[/]"
+                f"  [bold $primary]{frame}[/]  [#8B949E]{self._label}[/][dim $secondary]{dots}[/]"
             )
         )
 
@@ -143,47 +143,47 @@ class MessageDisplay(Horizontal):
     .msg-content-container {
         width: 1fr;
         height: auto;
-        background: #1C2128;
-        border: round #30363D;
+        background: $surface;
+        border: round $border;
         padding: 0 1;
     }
     .msg-content-container.user {
-        background: #12161D;
-        border: round #FF7B00;
+        background: $surface;
+        border: round $primary;
         margin-left: 10;
     }
     .msg-content-container.assistant {
-        background: #1C2128;
-        border: round #D4AF37;
+        background: $panel;
+        border: round $secondary;
         margin-right: 10;
-        outline: solid #FFD70011;
+        outline: solid $secondary 10%;
     }
     .msg-header {
         height: 1;
         margin: 0 1;
-        color: #8B949E;
+        color: $text-muted;
         text-style: bold;
     }
     .msg-body {
         height: auto;
         padding: 0 1;
-        color: #E6EDF3;
+        color: $text;
     }
     .msg-btn {
         width: 8;
         min-width: 8;
         height: 3;
         margin-left: 1;
-        background: #1C2128;
-        border: round #D4AF37;
-        color: #E6EDF3;
+        background: $surface;
+        border: round $secondary;
+        color: $text;
         text-style: bold;
         padding: 0;
     }
     .msg-btn:hover {
-        background: #D4AF37;
-        color: #0A0C10;
-        border: round #FFD700;
+        background: $secondary;
+        color: white;
+        border: round $primary;
     }
     .msg-action-column {
         width: 9;
@@ -279,39 +279,39 @@ class SidebarWidget(Vertical):
     DEFAULT_CSS = """
     SidebarWidget {
         width: 28;
-        background: #12161D;
-        border-right: thick #30363D;
+        background: $surface;
+        border-right: thick $border;
         padding: 1 2;
         margin: 1 0 1 1;
-        outline: solid #FFD70011;
+        outline: solid $primary 10%;
         display: none;
     }
     SidebarWidget.visible { display: block; }
 
     .sb-title {
-        color: #D4AF37;
+        color: $secondary;
         text-style: bold;
         text-align: center;
         width: 100%;
         margin-bottom: 1;
     }
     .sb-div {
-        color: #30363D;
+        color: $border;
         width: 100%;
         margin-bottom: 1;
     }
     .sb-label {
-        color: #8B949E;
+        color: $text-muted;
         width: 100%;
     }
     .sb-val {
-        color: #E6EDF3;
+        color: $text;
         text-style: bold;
         width: 100%;
         margin-bottom: 1;
     }
     .sc-row {
-        color: #8B949E;
+        color: $text-muted;
         width: 100%;
         padding: 0 1;
     }
@@ -322,7 +322,7 @@ class SidebarWidget(Vertical):
     model_name: reactive[str]    = reactive("")
 
     def compose(self) -> ComposeResult:
-        yield Static("[bold #D4AF37]🔥 GIYU AGENT[/]", classes="sb-title")
+        yield Static("[bold $secondary]🌊 GIYU AGENT[/]", classes="sb-title")
         yield Static("─" * 22, classes="sb-div")
 
         yield Static("Model", classes="sb-label")
@@ -382,46 +382,46 @@ class ChatInputBar(Horizontal):
     DEFAULT_CSS = """
     ChatInputBar {
         height: 5;
-        background: #12161D;
-        border-top: thick #30363D;
+        background: $surface;
+        border-top: thick $border;
         padding: 0 2;
         align: left middle;
         margin: 0 1 1 1;
-        outline: solid #FFD70011;
+        outline: solid $primary 10%;
     }
     #input-prefix {
-        color: #FF7B00;
+        color: $primary;
         text-style: bold;
         width: auto;
         padding: 0 1;
     }
     ChatTextArea {
-        background: #0A0C10;
-        color: #E6EDF3;
+        background: $background;
+        color: $text;
         width: 1fr;
         height: 3;
     }
     ChatTextArea:focus {
-        border: round #FF7B00;
+        border: round $primary;
     }
     Select {
         width: 16;
         height: 1;
         margin-left: 1;
-        background: #0A0C10;
-        border: round #30363D;
-        color: #E6EDF3;
+        background: $background;
+        border: round $border;
+        color: $text;
     }
     Select:focus {
-        border: round #D4AF37;
+        border: round $secondary;
     }
     #char-counter {
-        color: #8B949E;
+        color: $text-muted;
         width: auto;
         padding: 0 1;
     }
-    #char-counter.warn   { color: #D4AF37; }
-    #char-counter.danger { color: #DA3633; }
+    #char-counter.warn   { color: $warning; }
+    #char-counter.danger { color: $error; }
     """
 
     MAX_CHARS = 4096
@@ -468,28 +468,28 @@ class ChatScreen(Screen):
 
     DEFAULT_CSS = """
     ChatScreen {
-        background: #0A0C10;
+        background: $background;
         layout: vertical;
     }
 
     /* ── Header ── */
     #chat-header {
         height: 3;
-        background: #12161D;
-        border-bottom: thick #30363D;
+        background: $surface;
+        border-bottom: thick $border;
         layout: horizontal;
         align: left middle;
         padding: 0 4;
         margin: 1 1 0 1;
-        outline: solid #FFD70011;
+        outline: solid $primary 10%;
     }
     #header-logo {
-        color: #FF7B00;
+        color: $primary;
         text-style: bold;
         width: auto;
     }
     #header-status {
-        color: #238636;
+        color: $success;
         text-style: bold italic;
         width: 1fr;
         text-align: right;
@@ -503,15 +503,15 @@ class ChatScreen(Screen):
     #chat-log-container {
         width: 1fr;
         height: 100%;
-        background: #0A0C10;
+        background: $background;
         layout: vertical;
     }
     #chat-log {
         width: 100%;
         height: 1fr;
-        background: #0A0C10;
-        scrollbar-color: #30363D;
-        scrollbar-color-hover: #D4AF37;
+        background: $background;
+        scrollbar-color: $border;
+        scrollbar-color-hover: $secondary;
         scrollbar-gutter: stable;
         padding: 1 2;
         overflow-y: scroll;
@@ -520,8 +520,8 @@ class ChatScreen(Screen):
     /* ── Footer ── */
     #chat-footer {
         height: 1;
-        background: #12161D;
-        color: #8B949E;
+        background: $surface;
+        color: $text-muted;
         text-align: center;
         padding: 0 1;
     }
@@ -538,7 +538,7 @@ class ChatScreen(Screen):
     def compose(self) -> ComposeResult:
         # Header
         with Horizontal(id="chat-header"):
-            yield Static("[bold #FF7B00]🔥 GIYU[/]", id="header-logo")
+            yield Static("[bold $primary]🌊 GIYU[/]", id="header-logo")
             yield Static("● Initializing", id="header-status")
 
         # Body
@@ -588,8 +588,8 @@ class ChatScreen(Screen):
     def _print_welcome(self) -> None:
         log = self.query_one("#chat-log", VerticalScroll)
         log.mount(Static(""))
-        log.mount(Static("[bold #FF7B00]🐦‍🔥  Greetings. I am Giyu.[/]", markup=True))
-        log.mount(Static("[dim #8B949E]The Ultimate Autonomous Architect is ready to manifest your vision.[/]", markup=True))
+        log.mount(Static("[bold $primary]🌊  Greetings. I am Giyu.[/]", markup=True))
+        log.mount(Static("[dim $text-muted]The System Stability Sentinel is ready to monitor your network.[/]", markup=True))
         log.mount(Static(""))
 
     # ── agent init ────────────────────────────────────────────────────────────
