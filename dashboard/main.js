@@ -290,10 +290,28 @@ function updateReports(generations) {
         item.innerHTML = innerHtml;
         fragment.appendChild(item);
 
-        // Mirror to modal
-        const modalItem = item.cloneNode(true);
-        modalItem.classList.add('mb-4');
-        modalFragment.appendChild(modalItem);
+        // Mirror to modal as Chat Bubbles
+        if (modalHistory) {
+            const aiMsg = document.createElement('div');
+            aiMsg.className = 'message msg-ai';
+            
+            // If it's a history item that contains both query and analysis
+            if (typeof gen === 'object' && gen.content && gen.content.includes('**Query:**')) {
+                const parts = gen.content.split('**Analysis:**');
+                const userText = parts[0].replace('**Query:**', '').trim();
+                const aiText = parts[1].trim();
+
+                const userMsg = document.createElement('div');
+                userMsg.className = 'message msg-user';
+                userMsg.innerHTML = `<h5>You</h5><div>${userText}</div>`;
+                modalFragment.appendChild(userMsg);
+
+                aiMsg.innerHTML = `<h5>Giyu</h5><div>${marked.parse(aiText)}</div>`;
+            } else {
+                aiMsg.innerHTML = `<h5>Giyu</h5><div>${marked.parse(content)}</div>`;
+            }
+            modalFragment.appendChild(aiMsg);
+        }
     });
     
     list.innerHTML = '';
@@ -313,6 +331,26 @@ async function sendCommand(inputId = 'agent-input') {
 
     input.value = '';
     const session_id = 'gui_' + Date.now();
+
+    // Show user message in modal immediately
+    const modalHistory = document.getElementById('modal-chat-history');
+    if (modalHistory) {
+        // Clear welcome message if it's the first message
+        if (modalHistory.querySelector('.text-center')) modalHistory.innerHTML = '';
+        
+        const userMsg = document.createElement('div');
+        userMsg.className = 'message msg-user';
+        userMsg.innerHTML = `<h5>You</h5><div>${task}</div>`;
+        modalHistory.appendChild(userMsg);
+        
+        const typingMsg = document.createElement('div');
+        typingMsg.className = 'message msg-ai typing-indicator';
+        typingMsg.id = 'typing-' + session_id;
+        typingMsg.innerHTML = `<h5>Giyu</h5><div><i class="bi bi-three-dots"></i> Processing...</div>`;
+        modalHistory.appendChild(typingMsg);
+        
+        modalHistory.scrollTop = modalHistory.scrollHeight;
+    }
 
     // Determine mode from the closest container
     const container = input.closest('.input-container-premium');
