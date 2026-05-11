@@ -344,6 +344,7 @@ class SidebarWidget(Vertical):
             ("Ctrl+L",      "Clear chat"),
             ("Ctrl+K",      "Config"),
             ("Ctrl+B",      "Sidebar"),
+            ("Ctrl+S",      "Stability"),
             ("Ctrl+Y",      "Copy Last"),
             ("Ctrl+Q",      "Quit"),
             ("Esc",        "Cancel"),
@@ -462,6 +463,7 @@ class ChatScreen(Screen):
     BINDINGS = [
         Binding("ctrl+l", "clear_chat",     "Clear",   show=False),
         Binding("ctrl+b", "toggle_sidebar", "Sidebar", show=False),
+        Binding("ctrl+s", "open_stability", "Stability", show=True),
         Binding("ctrl+y", "copy_last",      "Copy Last", show=False),
         Binding("escape", "cancel_stream",  "Cancel",  show=False),
     ]
@@ -669,6 +671,11 @@ class ChatScreen(Screen):
         self.query_one("#thinking-spinner", ThinkingSpinner).hide()
         self._set_status("● Ready", "#39d353")
         self.query_one("#sidebar", SidebarWidget).status = "● Ready"
+
+    def action_open_stability(self) -> None:
+        """Opens the real-time stability monitor screen."""
+        from .stability_screen import StabilityScreen
+        self.app.push_screen(StabilityScreen())
 
     def action_copy_last(self) -> None:
         """Copies the last assistant response to the clipboard."""
