@@ -61,20 +61,31 @@ class GiyuApp(App):
             self.push_screen(SetupWizard())
 
     def on_mount(self) -> None:
-        # Apply the custom theme
+        """Initializes the app and handles the splash-to-main transition."""
         self.register_theme(GIYU_THEME)
         self.theme = "giyu"
 
         # 1. Immediately show splash to provide instant feedback
         self.push_screen(SplashScreen())
 
-        # 2. Load the rest while splash is visible
+        # 2. Start background loading of the main interface
+        self._load_main_interface()
+
+    @work(exclusive=True)
+    async def _load_main_interface(self) -> None:
+        """Loads the main screen in the background to avoid blocking the UI thread."""
         if _has_valid_config():
             from .cli.chat_screen import ChatScreen
-            self.push_screen(ChatScreen())
+            main_screen = ChatScreen()
         else:
             from .cli.setup_wizard import SetupWizard
-            self.push_screen(SetupWizard())
+            main_screen = SetupWizard()
+        
+        # Give the splash screen at least 1 second of glory
+        await asyncio.sleep(1.0)
+        
+        # Transition to the main screen
+        self.push_screen(main_screen)
 
 
 def main() -> None:
