@@ -329,5 +329,51 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="main.js"></script>
+    <!-- Floating Action Button -->
+    <button class="fab-chat" data-bs-toggle="modal" data-bs-target="#chatModal" title="Open Guardian Chat">
+        <i class="bi bi-chat-dots-fill"></i>
+        <div class="fab-glow"></div>
+    </button>
+
+    <!-- Chat Modal -->
+    <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content bento-card glass-modal shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title section-label" id="chatModalLabel">
+                        <i class="bi bi-robot me-2 text-primary"></i>Guardian Interface
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="chat-history-wrapper" id="modal-chat-history">
+                        <div class="text-center text-ghost py-5">
+                            <i class="bi bi-chat-left-dots h1 d-block mb-3"></i>
+                            <p>Initialize communication with Giyu Sentinel</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <div class="input-container-premium w-100">
+                        <div class="mode-selector mb-2">
+                            <button class="mode-btn active" data-mode="auto">
+                                <i class="bi bi-gear-wide-connected"></i> <span>Planning</span>
+                            </button>
+                            <button class="mode-btn" data-mode="fast_ans">
+                                <i class="bi bi-chat-dots"></i> <span>Chat</span>
+                            </button>
+                        </div>
+                        <div class="input-wrapper">
+                            <input type="text" id="modal-agent-input" placeholder="Enter command for the Guardian...">
+                            <button id="modal-send-btn">
+                                <i class="bi bi-send-fill"></i>
+                                <span>EXECUTE</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
