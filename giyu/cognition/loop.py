@@ -23,6 +23,21 @@ class GiyuLoop(AgentLoop):
     MAX_RETRIES = 2
     MAX_ACTIONS = 30
 
+    def _load_pipeline_spec(self, filename: str):
+        """
+        Bypass missing default JSON specs in phoenix site-packages.
+        GiyuLoop re-implements run() and run_stream() using direct orchestration,
+        so it doesn't strictly need these legacy pipelines.
+        """
+        try:
+            return super()._load_pipeline_spec(filename)
+        except Exception:
+            from phoenix.framework.agent.cognition.pipeline import CognitionPipeline
+            return CognitionPipeline({
+                "name": "giyu_dummy_pipeline",
+                "steps": [{"id": "init", "brain": "thinker", "output_key": "init_out"}]
+            })
+
     def __init__(self, thinker, planner, actor, reflector, analyzer, 
                  stability_scorer=None, decision_gate=None, correlation_engine=None, generator=None):
         super().__init__(thinker, planner, actor, reflector, analyzer)
