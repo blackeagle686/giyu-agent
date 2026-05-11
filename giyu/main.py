@@ -65,15 +65,16 @@ class GiyuApp(App):
         self.register_theme(GIYU_THEME)
         self.theme = "giyu"
 
+        # 1. Immediately show splash to provide instant feedback
+        self.push_screen(SplashScreen())
+
+        # 2. Load the rest while splash is visible
         if _has_valid_config():
             from .cli.chat_screen import ChatScreen
             self.push_screen(ChatScreen())
         else:
             from .cli.setup_wizard import SetupWizard
             self.push_screen(SetupWizard())
-        
-        # Show splash on top of the initial screen
-        self.push_screen(SplashScreen())
 
 
 def main() -> None:
