@@ -9,6 +9,8 @@ const charts = {
     net: { instance: null, data: Array(historySize).fill(0) }
 };
 
+let isStreaming = false;
+
 // Colors from style.css
 const COLORS = {
     primary: '#00f2ff',
@@ -93,9 +95,8 @@ function updateClock() {
 }
 
 let lastDataHash = '';
-let localReports = [];
-
 async function updateData() {
+    if (isStreaming) return; // Prevent background sync from wiping active chat
     try {
         const healthRes = await fetch(`${API_BASE}/health`);
         const health = await healthRes.json();
@@ -125,6 +126,9 @@ async function updateData() {
         updateReports(backbone.generations);
 
     } catch (error) {
+        console.warn('Sync failed:', error);
+    }
+}
         console.warn('Sync failed:', error);
     }
 }
@@ -325,17 +329,18 @@ function updateReports(generations) {
 }
 
 async function sendCommand(inputId = 'agent-input') {
+    if (isStreaming) return;
     const input = document.getElementById(inputId);
     const task = input.value.trim();
     if (!task) return;
 
     input.value = '';
     const session_id = 'gui_' + Date.now();
+    isStreaming = true;
 
     // Show user message in modal immediately
     const modalHistory = document.getElementById('modal-chat-history');
     if (modalHistory) {
-        // Clear welcome message if it's the first message
         if (modalHistory.querySelector('.text-center')) modalHistory.innerHTML = '';
         
         const userMsg = document.createElement('div');
@@ -357,37 +362,63 @@ async function sendCommand(inputId = 'agent-input') {
     const activeModeBtn = container.querySelector('.mode-btn.active');
     const mode = activeModeBtn ? activeModeBtn.dataset.mode : 'auto';
     
-    const response = await fetch(`${API_BASE}/chat/stream`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task, session_id, mode: mode })
-    });
+    try {
+        const response = await fetch(`${API_BASE}/chat/stream`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ task, session_id, mode: mode })
+        });
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let agentResponse = "";
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let agentResponse = "";
 
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-        const lines = decoder.decode(value).split('\n');
-        for (const line of lines) {
-            if (line.startsWith('data: ')) {
-                const event = JSON.parse(line.substring(6));
-                if (event.type === 'chunk') {
-                    agentResponse += event.content;
-                    const typing = document.getElementById('typing-' + session_id);
-                    if (typing) typing.remove();
-                } else if (event.type === 'done' && agentResponse.trim()) {
-                    localReports.unshift({
-                        timestamp: Date.now() / 1000,
-                        content: `**Query:** ${task}\n\n**Analysis:**\n${agentResponse.trim()}`
-                    });
+            const lines = decoder.decode(value).split('\n');
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const eventString = line.substring(6).trim();
+                    if (!eventString) continue;
+                    
+                    const event = JSON.parse(eventString);
+                    if (event.type === 'chunk') {
+                        agentResponse += event.content;
+                        const typing = document.getElementById('typing-' + session_id);
+                        if (typing) typing.remove();
+                        
+                        // Update/Create AI bubble in real-time
+                        let aiBubble = document.getElementById('ai-' + session_id);
+                        if (!aiBubble) {
+                            aiBubble = document.createElement('div');
+                            aiBubble.className = 'message msg-ai';
+                            aiBubble.id = 'ai-' + session_id;
+                            aiBubble.innerHTML = `<h5>Giyu</h5><div class="content"></div>`;
+                            modalHistory.appendChild(aiBubble);
+                        }
+                        aiBubble.querySelector('.content').innerHTML = marked.parse(agentResponse);
+                        modalHistory.scrollTop = modalHistory.scrollHeight;
+
+                    } else if (event.type === 'done') {
+                        if (agentResponse.trim()) {
+                            localReports.unshift({
+                                timestamp: Date.now() / 1000,
+                                content: `**Query:** ${task}\n\n**Analysis:**\n${agentResponse.trim()}`
+                            });
+                        }
+                    }
                 }
             }
         }
-        updateData();
+    } catch (err) {
+        console.error('Chat error:', err);
+    } finally {
+        isStreaming = false;
+        const typing = document.getElementById('typing-' + session_id);
+        if (typing) typing.remove();
+        updateData(); // Final sync
     }
 }
 
