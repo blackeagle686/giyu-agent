@@ -10,7 +10,7 @@ from phoenix import Agent, init_phoenix, startup_phoenix
 from .tools.project_generator import project_generator_tool
 from .tools.file_tools import file_read_lines_tool, file_update_multi_tool
 
-async def get_giyu_agent(on_startup_progress=None):
+async def get_giyu_agent(on_startup_progress=None, system_info: str = ""):
     """
     Initializes the Phoenix framework, starts up services, and returns the Giyu agent.
     """
@@ -31,7 +31,7 @@ async def get_giyu_agent(on_startup_progress=None):
         loop_cls=GiyuLoop,
         component_factories={
             "thinker": lambda **ctx: GiyuThinker(ctx["llm"], profile=profile),
-            "planner": lambda **ctx: GiyuPlanner(ctx["llm"], ctx["tools"]),
+            "planner": lambda **ctx: GiyuPlanner(ctx["llm"], ctx["tools"], system_info=system_info),
             "reflector": lambda **ctx: GiyuReflector(ctx["llm"], profile=profile),
             "generator": lambda **ctx: GiyuGenerator(ctx["llm"]),
             "analyzer": lambda **ctx: GiyuAnalyzer(),
