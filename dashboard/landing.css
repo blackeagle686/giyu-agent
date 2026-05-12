@@ -636,6 +636,7 @@ footer {
     z-index: -2; /* Behind everything */
     pointer-events: none;
     background: #05070a;
+    opacity: 0.6; /* Decreased opacity for better background visibility */
 }
 
 #water-canvas-container canvas {
