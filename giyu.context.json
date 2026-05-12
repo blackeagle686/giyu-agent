@@ -2,7 +2,7 @@
   "context_id": "66a2dc11-48cc-4a24-b6fe-488665433c62",
   "metadata": {
     "created_at": "2026-05-12T03:52:56.817586",
-    "updated_at": "2026-05-12T03:53:11.908490",
+    "updated_at": "2026-05-12T03:54:29.270894",
     "original_prompt": "check the GPU status"
   },
   "tasks": [
@@ -11,7 +11,7 @@
       "priority": 1,
       "title": "Query GPU utilization and health status",
       "description": "Execute system-level command to retrieve current GPU usage, temperature, and operational status using existing CLI tools. Prioritize non-intrusive monitoring to avoid disrupting system stability.",
-      "status": "pending",
+      "status": "failed",
       "type": "command"
     }
   ],
@@ -27,7 +27,7 @@
         "complexity": "Low"
       },
       "dependencies": [],
-      "status": "pending"
+      "status": "failed"
     },
     {
       "plan_step_id": 2,
@@ -78,13 +78,13 @@
   "generations": [],
   "execution_state": {
     "completed_steps": [],
-    "pending_steps": [
+    "pending_steps": [],
+    "failed_steps": [
       {
         "id": 1,
         "title": "Query GPU utilization and health status"
       }
-    ],
-    "failed_steps": []
+    ]
   },
   "memory": {},
   "stability_reports": [
