@@ -600,6 +600,13 @@ class ChatScreen(Screen):
     async def _init_agent_worker(self) -> None:
         try:
             from ..agent import get_giyu_agent
+            
+            # Retrieve cached system info from the main app's probe
+            sys_info = ""
+            if hasattr(self.app, "system_probe"):
+                sys_info = self.app.system_probe.get_summary()
+                
+            self._agent = await get_giyu_agent(system_info=sys_info)
             from pathlib import Path
             local_env = Path(".env")
             global_env = Path.home() / ".giyu" / ".env"
