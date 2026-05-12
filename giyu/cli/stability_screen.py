@@ -39,12 +39,10 @@ class StatCard(Container):
     }
     .card-value {
         color: $text;
-        font-size: 1.5rem;
         text-style: bold;
     }
     .card-meta {
         color: $text-muted;
-        font-size: 0.8rem;
     }
     """
 
