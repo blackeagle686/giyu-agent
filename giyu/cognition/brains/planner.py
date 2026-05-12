@@ -12,16 +12,24 @@ class GiyuPlanner(Planner):
     Persists to giyu.plan.json and does NOT generate tool actions directly.
     """
 
+    def __init__(self, llm, tools, system_info: str = ""):
+        super().__init__(llm, tools)
+        self.system_info = system_info
+
     async def generate_plan_steps(self, task: dict) -> list:
         """
         Ask LLM to generate plan steps for the given task and persist to the backbone.
         """
         from ..helpers.schemas import validate_schema, PLAN_SCHEMA
+        
+        # Inject system context for optimized task handling
+        sys_context = f"\n[SYSTEM CONTEXT]\n{self.system_info}\n" if self.system_info else ""
+        
         prompt = PLAN_GENERATION_PROMPT.format(
             task_id=task.get("id", 1),
             priority=task.get("priority", 1),
             title=task.get("title", ""),
-            description=task.get("description", "")
+            description=task.get("description", "") + sys_context
         )
 
         response = await self.llm.generate(prompt, session_id=None)
@@ -82,7 +90,32 @@ class GiyuPlanner(Planner):
         existing_plan["plan_steps"] = existing_steps
         _save_plan(existing_plan)
         
+        # Generate a high-level summary for the user
+        await self.generate_summary_report(task, new_steps)
+        
         return new_steps
+
+    async def generate_summary_report(self, task: dict, steps: list) -> None:
+        """
+        Generates a readable high-level report of the plan for the user.
+        """
+        step_descriptions = "\n".join([f"- {s.get('description')}" for s in steps])
+        report_prompt = f"""
+        Generate a concise, professional summary report for the user based on the following task and planned steps.
+        Focus on the GOAL and the RESULT. Avoid technical jargon where possible.
+        
+        TASK: {task.get('title')}
+        DESCRIPTION: {task.get('description')}
+        
+        PLANNED STEPS:
+        {step_descriptions}
+        
+        Format as a clean markdown report.
+        """
+        report = await self.llm.generate(report_prompt, session_id=None)
+        # We can print this to the console or store it in the task object
+        print(f"\n[GIYU SENTINEL REPORT]\n{report}\n")
+        task["summary_report"] = report
 
     def task_status_line(self, task: dict) -> str:
         """Return a deterministic status line from the task dict — no LLM call needed."""

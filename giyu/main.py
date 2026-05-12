@@ -77,6 +77,11 @@ class GiyuApp(App):
     async def _load_main_interface(self) -> None:
         """Loads the main screen in the background and transitions from splash."""
         try:
+            # 1. Gather System Info in background (Optimized startup)
+            from .core.system_info import SystemProbe
+            self.system_probe = SystemProbe()
+            await self.system_probe.probe_all()
+            
             # Prepare the main interface
             if _has_valid_config():
                 from .cli.chat_screen import ChatScreen
