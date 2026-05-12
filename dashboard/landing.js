@@ -13,7 +13,7 @@ magneticButtons.forEach(btn => {
         const rect = btn.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
         const y = e.clientY - rect.top - rect.height / 2;
-        
+
         gsap.to(btn, {
             x: x * 0.3,
             y: y * 0.3,
@@ -116,7 +116,7 @@ function initParticles() {
 
 function animateParticles() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     for (let i = 0; i < particles.length; i++) {
         particles[i].update();
         particles[i].draw();
@@ -131,7 +131,7 @@ function animateParticles() {
                 const grad = ctx.createLinearGradient(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
                 grad.addColorStop(0, particles[i].color);
                 grad.addColorStop(1, particles[j].color);
-                
+
                 ctx.strokeStyle = grad;
                 ctx.globalAlpha = opacity;
                 ctx.lineWidth = 0.8;
@@ -162,32 +162,32 @@ window.addEventListener('load', () => {
         duration: 1.5,
         ease: 'power3.inOut'
     })
-    .to('.preloader', {
-        yPercent: -100,
-        duration: 0.8,
-        ease: 'power4.inOut',
-        delay: 0.2
-    })
-    .add(() => {
-        // Start particle animation when preloader finishes
-        initParticles();
-        animateParticles();
-    }, "-=0.4")
-    // Hero Animations
-    .from(heroTitle.words, {
-        y: 100,
-        opacity: 0,
-        duration: 1,
-        stagger: 0.05,
-        ease: 'back.out(1.7)'
-    }, "-=0.2")
-    .from('.fade-in-up', {
-        y: 30,
-        opacity: 0,
-        duration: 1,
-        stagger: 0.1,
-        ease: 'power3.out'
-    }, "-=0.6");
+        .to('.preloader', {
+            yPercent: -100,
+            duration: 0.8,
+            ease: 'power4.inOut',
+            delay: 0.2
+        })
+        .add(() => {
+            // Start particle animation when preloader finishes
+            initParticles();
+            animateParticles();
+        }, "-=0.4")
+        // Hero Animations
+        .from(heroTitle.words, {
+            y: 100,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.05,
+            ease: 'back.out(1.7)'
+        }, "-=0.2")
+        .from('.fade-in-up', {
+            y: 30,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.1,
+            ease: 'power3.out'
+        }, "-=0.6");
 
     // --- 5. Scroll Animations ---
 
@@ -216,34 +216,9 @@ window.addEventListener('load', () => {
     });
 
     archTl.from('.arch-text', { x: -50, opacity: 0, duration: 1 })
-          .from('.arch-visual', { x: 50, opacity: 0, duration: 1 }, "-=1")
-          .from('.status-ring', { scale: 0.5, opacity: 0, rotation: 180, duration: 1.5, ease: 'back.out(1.5)' }, "-=0.5")
-          .from('.progress-bar .fill', { width: 0, duration: 1, stagger: 0.2 }, "-=1");
-
-    // --- 6. 3D Tilt Effect for Hero Card ---
-    const heroCard = document.getElementById('hero-card');
-    if (heroCard) {
-        window.addEventListener('mousemove', (e) => {
-            const x = (window.innerWidth / 2 - e.clientX) / 25;
-            const y = (window.innerHeight / 2 - e.clientY) / 25;
-
-            gsap.to(heroCard, {
-                rotationY: -x,
-                rotationX: y,
-                duration: 1,
-                ease: "power2.out"
-            });
-        });
-
-        heroCard.addEventListener('mouseleave', () => {
-            gsap.to(heroCard, {
-                rotationY: 0,
-                rotationX: 0,
-                duration: 1.5,
-                ease: "elastic.out(1, 0.3)"
-            });
-        });
-    }
+        .from('.arch-visual', { x: 50, opacity: 0, duration: 1 }, "-=1")
+        .from('.status-ring', { scale: 0.5, opacity: 0, rotation: 180, duration: 1.5, ease: 'back.out(1.5)' }, "-=0.5")
+        .from('.progress-bar .fill', { width: 0, duration: 1, stagger: 0.2 }, "-=1");
 });
 
 // Smooth anchor scrolling handled natively by CSS scroll-behavior: smooth

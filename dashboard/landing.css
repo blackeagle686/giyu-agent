@@ -81,12 +81,22 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: scale(1) rotate(0deg); }
-    50% { transform: scale(1.2) rotate(180deg); }
-    100% { transform: scale(1) rotate(360deg); }
+    0% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    50% {
+        transform: scale(1.2) rotate(180deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(360deg);
+    }
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     font-family: 'Outfit', sans-serif;
     font-weight: 800;
 }
@@ -108,8 +118,10 @@ body::before {
     background-image: url('giyu.png');
     background-size: cover;
     background-position: center;
-    opacity: 0.25; /* Increased visibility */
-    z-index: -1; /* Above the water canvas (-2) but behind content */
+    opacity: 0.25;
+    /* Increased visibility */
+    z-index: -1;
+    /* Above the water canvas (-2) but behind content */
     filter: saturate(1.2) contrast(1.1) brightness(0.7);
     pointer-events: none;
 }
@@ -216,98 +228,64 @@ nav a:hover {
 
 .hero-glass-card {
     background: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(25px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 5rem 4rem;
-    border-radius: 40px;
-    box-shadow: 
-        0 25px 50px -12px rgba(0, 0, 0, 0.7),
-        inset 0 0 40px rgba(0, 242, 255, 0.03);
-    position: relative;
-    overflow: hidden;
-    transform-style: preserve-3d;
-    perspective: 1000px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4rem;
+    border-radius: 32px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-/* Holographic Scanline */
-.hologram-line {
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(0, 242, 255, 0.1);
+    border: 1px solid rgba(0, 242, 255, 0.2);
+    padding: 0.5rem 1.25rem;
+    border-radius: 100px;
+    margin-bottom: 2rem;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #00f2ff;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 10px #00f2ff;
+}
+
+.pulse-dot::after {
+    content: '';
     position: absolute;
-    top: -100%;
+    top: 0;
     left: 0;
     width: 100%;
-    height: 10px;
-    background: linear-gradient(to bottom, transparent, rgba(0, 242, 255, 0.3), transparent);
-    z-index: 10;
-    animation: scan 6s linear infinite;
-    pointer-events: none;
+    height: 100%;
+    background: #00f2ff;
+    border-radius: 50%;
+    animation: badge-pulse 2s infinite;
 }
 
-@keyframes scan {
-    0% { top: -10% }
-    100% { top: 110% }
+@keyframes badge-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(3);
+        opacity: 0;
+    }
 }
 
-.title-glow {
-    text-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
-}
-
-.neon-pulse {
-    animation: neon-glow 3s ease-in-out infinite alternate;
-}
-
-@keyframes neon-glow {
-    from { filter: drop-shadow(0 0 5px rgba(0, 242, 255, 0.4)) }
-    to { filter: drop-shadow(0 0 15px rgba(112, 0, 255, 0.6)) }
-}
-
-.hero-subtext {
-    max-width: 650px;
-    margin: 0 auto 3rem;
-    font-size: 1.3rem;
-}
-
-/* Floating Metrics Dashboard */
-.hero-metrics {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    margin-bottom: 4rem;
-}
-
-.metric-node {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 1.2rem 2rem;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    min-width: 140px;
-    transition: transform 0.3s;
-}
-
-.metric-node:hover {
-    transform: translateY(-5px);
-    border-color: rgba(0, 242, 255, 0.3);
-}
-
-.m-label {
-    font-size: 0.7rem;
+.status-text {
+    font-size: 0.75rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: var(--text-secondary);
-    margin-bottom: 0.5rem;
+    color: #00f2ff;
 }
-
-.m-value {
-    font-size: 1.8rem;
-    font-weight: 800;
-    font-family: 'Outfit', sans-serif;
-}
-
-.cyan-text { color: #00f2ff; text-shadow: 0 0 10px rgba(0, 242, 255, 0.3); }
-.purple-text { color: #7000ff; text-shadow: 0 0 10px rgba(112, 0, 255, 0.3); }
-.warning-text { color: #f59e0b; }
 
 .hero-image {
     position: relative;
@@ -327,8 +305,15 @@ nav a:hover {
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
 }
 
 .hero h1 {
@@ -358,7 +343,8 @@ nav a:hover {
     justify-content: center;
 }
 
-.primary-btn, .secondary-btn {
+.primary-btn,
+.secondary-btn {
     padding: 1rem 2.5rem;
     border-radius: 50px;
     text-decoration: none;
@@ -371,38 +357,26 @@ nav a:hover {
     font-size: 1.1rem;
 }
 
-.primary-btn.glow-btn {
-    position: relative;
-    overflow: hidden;
+.primary-btn {
     background: var(--gradient);
-    border: none;
-    z-index: 1;
+    color: white;
+    box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
 }
 
-.btn-shine {
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: all 0.6s;
-    z-index: -1;
+.secondary-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(5px);
 }
 
-.primary-btn:hover .btn-shine {
-    left: 100%;
-}
-
-.secondary-btn.glass-btn {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+.primary-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 30px -10px rgba(59, 130, 246, 0.6);
 }
 
 .secondary-btn:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #00f2ff;
-    border-color: #00f2ff;
 }
 
 /* GSAP SplitText Styles */
@@ -526,11 +500,12 @@ nav a:hover {
     padding: 3rem;
     border-radius: 24px;
     text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 .glass {
-    background: rgba(15, 23, 42, 0.85); /* Solidified for performance */
+    background: rgba(15, 23, 42, 0.85);
+    /* Solidified for performance */
     border: 1px solid var(--glass-border);
 }
 
@@ -614,8 +589,15 @@ nav a:hover {
 }
 
 @keyframes scroll {
-    0% { opacity: 1; transform: translateX(-50%) translateY(0); }
-    100% { opacity: 0; transform: translateX(-50%) translateY(15px); }
+    0% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(15px);
+    }
 }
 
 /* Footer */
@@ -644,7 +626,8 @@ footer {
     bottom: 2rem;
     left: 2rem;
     z-index: 999;
-    background: rgba(10, 25, 47, 0.95); /* Opaque for performance */
+    background: rgba(10, 25, 47, 0.95);
+    /* Opaque for performance */
     border: 1px solid rgba(100, 255, 218, 0.2);
     border-radius: 12px;
     padding: 0.8rem 1.2rem;
@@ -674,8 +657,13 @@ footer {
 }
 
 @keyframes simple-pulse {
-    0% { opacity: 0.5; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 .powered-by-badge .badge-content {
@@ -694,8 +682,15 @@ footer {
 }
 
 @keyframes pulse-icon {
-    0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(20, 184, 166, 0.4)); }
-    100% { transform: scale(1.1); filter: drop-shadow(0 0 12px rgba(20, 184, 166, 0.8)); }
+    0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px rgba(20, 184, 166, 0.4));
+    }
+
+    100% {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 12px rgba(20, 184, 166, 0.8));
+    }
 }
 
 .badge-text {
@@ -725,29 +720,46 @@ footer {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-    .hero h1 { font-size: 3rem; }
-    .split-layout { grid-template-columns: 1fr; }
-    nav ul { display: none; }
-    .hero-btns { flex-direction: column; }
+    .hero h1 {
+        font-size: 3rem;
+    }
+
+    .split-layout {
+        grid-template-columns: 1fr;
+    }
+
+    nav ul {
+        display: none;
+    }
+
+    .hero-btns {
+        flex-direction: column;
+    }
+
     .powered-by-badge {
         bottom: 1rem;
         left: 1rem;
         padding: 0.5rem 0.8rem;
     }
-    .powered-by-badge .badge-text { display: none; }
+
+    .powered-by-badge .badge-text {
+        display: none;
+    }
 }
 
 /* 🌊 3D Real Sea Waves 🌊 */
 #water-canvas-container {
     position: fixed;
     top: 18rem;
-    left: 0;    
+    left: 0;
     width: 100%;
     height: 100vh;
-    z-index: -2; /* Behind everything */
+    z-index: -2;
+    /* Behind everything */
     pointer-events: none;
     background: #05070a;
-    opacity: 0.3; /* Decreased opacity for better background visibility */
+    opacity: 0.3;
+    /* Decreased opacity for better background visibility */
 }
 
 #water-canvas-container canvas {
