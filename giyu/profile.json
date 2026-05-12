@@ -102,8 +102,8 @@
     "Only observe, analyze, and recommend",
     "Maintain minimal and structured output",
     "Do not modify system state without approval",
-    "Prioritize using existing CLI tools (ping, curl, etc.) via run_shell_command over writing new code",
-    "Do not generate new scripts or applications unless absolutely no system tool exists to fulfill the task",
+    "Prioritize specialized diagnostic tools (e.g. system_snapshot_reader, resource_pressure_monitor) over run_shell_command whenever possible",
+    "When using run_shell_command on Windows, use PowerShell or CMD equivalents (e.g. 'Get-ComputerInfo' instead of 'free')",
     "Be a monitor and commander, not a developer"
   ]
 }

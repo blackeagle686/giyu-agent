@@ -142,55 +142,39 @@ class ShellCommandTool(BaseTool):
             return ToolResult(success=True, output=result)
         except Exception as e:
             return ToolResult(success=False, output="", error=str(e))
-
 class SystemSecurityAuditor(BaseTool):
     name = "security_audit_tool"
-    description = "Performs a comprehensive security audit of the system and network (ports, logins, firewall, active connections, DNS, and processes)."
+    description = "Performs a comprehensive security audit (ports, logins, firewall, processes)."
     async def execute(self, **kwargs) -> ToolResult:
+        import platform
         report = []
+        is_windows = os.name == "nt"
         try:
-            # 1. System Info & Uptime
-            report.append("### 🖥️ SYSTEM CORE STATUS")
-            uname = subprocess.check_output("uname -a", shell=True).decode().strip()
-            uptime = subprocess.check_output("uptime -p", shell=True).decode().strip()
-            report.append(f"- **Kernel:** `{uname}`\n- **Uptime:** `{uptime}`")
+            if is_windows:
+                report.append("### 🖥️ WINDOWS SYSTEM CORE STATUS")
+                report.append(f"- **OS:** `{platform.platform()}`\n- **Node:** `{platform.node()}`")
+                
+                report.append("\n### 🌐 NETWORK SECURITY AUDIT (Windows)")
+                try:
+                    net_cmd = 'powershell "Get-NetTCPConnection | Where-Object {$_.State -eq \'Listen\'} | Select-Object LocalAddress, LocalPort | head -n 10 | ConvertTo-Json"'
+                    report.append("#### Listening Ports:\n```text\n" + subprocess.check_output(net_cmd, shell=True).decode() + "\n```")
+                except:
+                    report.append("#### Listening Ports: `PowerShell query failed`")
+            else:
+                report.append("### 🖥️ LINUX SYSTEM CORE STATUS")
+                uname = subprocess.check_output("uname -a", shell=True).decode().strip()
+                report.append(f"- **Kernel:** `{uname}`")
+                
+                report.append("\n### 🌐 NETWORK SECURITY AUDIT (Linux)")
+                ports = subprocess.check_output("ss -tuln | head -n 10", shell=True).decode().strip()
+                report.append("#### Listening Ports:\n```text\n" + ports + "\n```")
 
-            # 2. Network Security (Ports & Connections)
-            report.append("\n### 🌐 NETWORK SECURITY AUDIT")
-            ports = subprocess.check_output("ss -tuln | head -n 15", shell=True).decode().strip()
-            report.append("#### Listening Ports (IPv4/IPv6):\n```text\n" + ports + "\n```")
-            
-            connections = subprocess.check_output("ss -atn | head -n 10", shell=True).decode().strip()
-            report.append("#### Established Connections (Top 10):\n```text\n" + connections + "\n```")
-
-            dns = subprocess.check_output("cat /etc/resolv.conf | grep nameserver", shell=True).decode().strip()
-            report.append(f"#### DNS Configuration:\n`{dns}`")
-
-            # 3. Access & Privilege Audit
-            report.append("\n### 🔑 ACCESS & PRIVILEGE AUDIT")
-            logins = subprocess.check_output("last -n 10", shell=True).decode().strip()
-            report.append("#### Recent Login Activity:\n```text\n" + logins + "\n```")
-            
-            # Check for failed login attempts if possible
-            try:
-                failed = subprocess.check_output("grep 'Failed password' /var/log/auth.log | tail -n 5 2>/dev/null || echo 'Insufficient permissions to read auth logs'", shell=True).decode().strip()
-                if failed: report.append(f"#### Detected Login Failures:\n```text\n{failed}\n```")
-            except: pass
-
-            # 4. Firewall & Perimeter
-            report.append("\n### 🛡️ FIREWALL & PERIMETER")
-            try:
-                ufw = subprocess.check_output("sudo ufw status 2>/dev/null || echo 'UFW not available or requires sudo'", shell=True).decode().strip()
-                report.append(f"**UFW Status:** `{ufw}`")
-            except:
-                report.append("**Firewall Status:** `Could not determine (check permissions)`")
-
-            # 5. Critical Process Audit
+            # Shared Process Audit
             report.append("\n### ⚙️ CRITICAL PROCESS AUDIT")
-            root_procs = subprocess.check_output("ps -U root -u root u | head -n 10", shell=True).decode().strip()
-            report.append("#### Top Root Processes:\n```text\n" + root_procs + "\n```")
+            procs = [p.info for p in psutil.process_iter(['pid', 'name', 'username'])][:10]
+            report.append("#### Top Processes:\n```text\n" + str(procs) + "\n```")
 
             output = "\n".join(report)
             return ToolResult(success=True, output=output)
         except Exception as e:
-            return ToolResult(success=False, output="", error=f"Comprehensive audit failed: {str(e)}")
+            return ToolResult(success=False, output="", error=f"Audit failed: {str(e)}")
