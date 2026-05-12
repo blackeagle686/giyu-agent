@@ -219,6 +219,31 @@ window.addEventListener('load', () => {
           .from('.arch-visual', { x: 50, opacity: 0, duration: 1 }, "-=1")
           .from('.status-ring', { scale: 0.5, opacity: 0, rotation: 180, duration: 1.5, ease: 'back.out(1.5)' }, "-=0.5")
           .from('.progress-bar .fill', { width: 0, duration: 1, stagger: 0.2 }, "-=1");
+
+    // --- 6. 3D Tilt Effect for Hero Card ---
+    const heroCard = document.getElementById('hero-card');
+    if (heroCard) {
+        window.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.clientX) / 25;
+            const y = (window.innerHeight / 2 - e.clientY) / 25;
+
+            gsap.to(heroCard, {
+                rotationY: -x,
+                rotationX: y,
+                duration: 1,
+                ease: "power2.out"
+            });
+        });
+
+        heroCard.addEventListener('mouseleave', () => {
+            gsap.to(heroCard, {
+                rotationY: 0,
+                rotationX: 0,
+                duration: 1.5,
+                ease: "elastic.out(1, 0.3)"
+            });
+        });
+    }
 });
 
 // Smooth anchor scrolling handled natively by CSS scroll-behavior: smooth
