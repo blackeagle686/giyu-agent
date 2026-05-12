@@ -105,12 +105,13 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('giyu.png');
+    background-image: url('giyu-bg.png');
     background-size: cover;
     background-position: center;
-    opacity: 0.12;
-    z-index: -3; /* Behind the water canvas */
-    filter: saturate(1.2) contrast(1.1) brightness(0.8);
+    opacity: 0.25; /* Increased visibility */
+    z-index: -1; /* Above the water canvas (-2) but behind content */
+    filter: saturate(1.2) contrast(1.1) brightness(0.7);
+    pointer-events: none;
 }
 
 #canvas-container {
