@@ -34,7 +34,7 @@
         uniforms: {
             uTime: { value: 0 },
             uScroll: { value: 0 },
-            uColorCyan: { value: new THREE.Color("#0099ffff") },
+            uColorCyan: { value: new THREE.Color("#020074ff") },
             uColorPurple: { value: new THREE.Color("#7000ff") },
             uColorDeep: { value: new THREE.Color("#020408") }
         },
