@@ -24,11 +24,22 @@ class SystemSnapshotReader(BaseTool):
 class LogStreamAnalyzer(BaseTool):
     name = "log_stream_analyzer"
     description = "Parses system logs and extracts errors, warnings, and patterns."
-    async def execute(self, log_path: str = "/var/log/syslog", lines: int = 100, **kwargs) -> ToolResult:
+    async def execute(self, log_path: str = None, lines: int = 100, **kwargs) -> ToolResult:
         try:
+            is_windows = os.name == "nt"
+            
+            if is_windows:
+                # Windows Event Log fallback
+                cmd = f'powershell "Get-EventLog -LogName System -Newest {lines} | Select-Object TimeGenerated, EntryType, Source, Message | ConvertTo-Json"'
+                result = subprocess.check_output(cmd, shell=True).decode()
+                return ToolResult(success=True, output=result)
+            
+            # Linux logic
+            if log_path is None:
+                log_path = "/var/log/syslog"
+                
             if not os.path.exists(log_path):
-                # Fallback to a mock or dmesg if syslog not accessible
-                result = subprocess.check_output(["dmesg", "|", "tail", f"-n {lines}"], shell=True).decode()
+                result = subprocess.check_output(f"dmesg | tail -n {lines}", shell=True).decode()
                 return ToolResult(success=True, output=result)
             
             result = subprocess.check_output(["tail", f"-n {lines}", log_path]).decode()
@@ -42,8 +53,10 @@ class AgentHeartbeatMonitor(BaseTool):
     async def execute(self, **kwargs) -> ToolResult:
         agents = ["Giyu", "Shinobu", "Rengoku", "Mitsuri", "Obanai", "Sanemi", "Gyomei", "Tengen", "Muichiro"]
         status = {}
+        # Use relative path or home-based path that works on both OS
+        base_path = os.path.expanduser("~/.giyu/hashira")
         for agent in agents:
-            path = f"/home/tlk/Documents/Projects/my_AItools/Hashira/{agent}"
+            path = os.path.join(base_path, agent)
             status[agent] = "active" if os.path.exists(path) else "missing"
         return ToolResult(success=True, output=str(status))
 
@@ -80,18 +93,20 @@ class RollbackRecommendationEngine(BaseTool):
     async def execute(self, repo_path: str = ".", **kwargs) -> ToolResult:
         try:
             # Check git log for recent commits
-            log = subprocess.check_output(["git", "log", "-n 5", "--oneline"], cwd=repo_path).decode()
-            return ToolResult(success=True, output=f"Recommended Rollback Points:\n{log}")
+            cmd = ["git", "log", "-n", "5", "--oneline"]
+            result = subprocess.check_output(cmd, cwd=repo_path, stderr=subprocess.STDOUT).decode()
+            return ToolResult(success=True, output=f"Recommended Rollback Points:\n{result}")
         except Exception as e:
-            return ToolResult(success=False, output="", error=str(e))
+            return ToolResult(success=False, output="", error=f"Git lookup failed: {str(e)}")
 
 class CoreEscalationTrigger(BaseTool):
     name = "core_escalation_trigger"
     description = "Sends critical alerts to Core Orchestrator when system is unstable."
     async def execute(self, level: str, message: str, **kwargs) -> ToolResult:
         alert = f"[ESCALATION] Level: {level}, Message: {message}, Time: {time.time()}"
-        # Mock escalation by writing to a global alert file
-        with open("/home/tlk/Documents/Projects/my_AItools/Hashira/alerts.log", "a") as f:
+        alert_file = os.path.expanduser("~/.giyu/alerts.log")
+        os.makedirs(os.path.dirname(alert_file), exist_ok=True)
+        with open(alert_file, "a") as f:
             f.write(alert + "\n")
         return ToolResult(success=True, output=f"Escalated to Core: {alert}")
 
