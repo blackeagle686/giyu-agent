@@ -93,7 +93,7 @@ class StabilityScreen(Screen):
     }
 
     .health-section {
-        grid-column: span 2;
+        column-span: 2;
         height: 10;
         align: center middle;
         background: $panel;
